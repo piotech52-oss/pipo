@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Manage Products | PIO Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <style>
+        * { 
+            font-family: 'Inter', sans-serif; 
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body { 
+            background: #f0f2f5; 
+            overflow-x: hidden;
+            width: 100%;
+        }
+        .sidebar { 
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%); 
+            min-height: 100vh;
+            transition: transform 0.3s ease-in-out;
+        }
+        .nav-item { 
+            transition: all 0.2s; 
+            cursor: pointer; 
+        }
+        .nav-item:hover { 
+            background: rgba(255,255,255,0.1); 
+        }
+        .nav-item.active { 
+            background: rgba(79, 107, 255, 0.2); 
+            border-left: 3px solid #4f6bff; 
+        }
+        .loader {
+            border: 3px solid #e8e7f0;
+            border-top: 3px solid #4f6bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .modal {
+            transition: all 0.3s ease;
+        }
+        .modal.hidden {
+            display: none;
+        }
+        .image-preview {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .product-image {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        
+        /* Mobile Responsive Styles */
+        @media (max-width: 1024px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                transform: translateX(-100%);
+                z-index: 1000;
+                width: 280px;
+                height: 100%;
+                overflow-y: auto;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .menu-toggle {
+                display: block !important;
+            }
+            .main-content {
+                margin-left: 0 !important;
+                width: 100%;
+            }
+        }
+        
+        @media (min-width: 1025px) {
+            .menu-toggle {
+                display: none !important;
+            }
+            .main-content {
+                margin-left: 256px;
+                width: calc(100% - 256px);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .table-responsive {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            .products-table {
+                min-width: 700px;
+            }
+            .modal-content {
+                margin: 16px;
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .product-image-cell {
+                min-width: 60px;
+            }
+            .action-buttons {
+                display: flex;
+                gap: 8px;
+            }
+        }
+        
+        .menu-toggle {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 1001;
+            background: #1a1a2e;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px;
+            cursor: pointer;
+        }
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+        .overlay.active {
+            display: block;
+        }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #4caf50;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            z-index: 2000;
+            animation: fadeOut 3s ease forwards;
+        }
+        .toast-error {
+            background: #f44336;
+        }
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            70% { opacity: 1; }
+            100% { opacity: 0; visibility: hidden; }
+        }
+        
+        /* Modal responsive */
+        .modal-container {
+            max-width: 95%;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        @media (min-width: 640px) {
+            .modal-container {
+                max-width: 90%;
+            }
+        }
+        
+        @media (min-width: 768px) {
+            .modal-container {
+                max-width: 700px;
+            }
+        }
+        
+        @media (min-width: 1024px) {
+            .modal-container {
+                max-width: 800px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Menu Toggle Button -->
+    <button class="menu-toggle" onclick="toggleSidebar()">
+        <span class="material-symbols-outlined">menu</span>
+    </button>
+    
+    <!-- Overlay for mobile -->
+    <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+    <div class="flex" style="min-height: 100vh;">
+        <!-- Sidebar -->
+        <aside class="sidebar w-64 text-white" id="sidebar">
+            <div class="p-6 border-b border-white/10">
+                <div class="flex justify-between items-center">
+                    <h1 class="text-xl font-bold">PIO Admin</h1>
+                    <button class="lg:hidden text-white/70 hover:text-white" onclick="closeSidebar()">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+                <p class="text-xs text-white/50 mt-1">E-market Dashboard</p>
+            </div>
+            <nav class="mt-6">
+                <a href="/admindashboard.html" class="nav-item flex items-center gap-3 px-6 py-3 text-white/80 hover:text-white">
+                    <span class="material-symbols-outlined">dashboard</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/adminproducts.html" class="nav-item active flex items-center gap-3 px-6 py-3 text-white/80 hover:text-white">
+                    <span class="material-symbols-outlined">inventory</span>
+                    <span>Products</span>
+                </a>
+                <a href="/adminorders.html" class="nav-item flex items-center gap-3 px-6 py-3 text-white/80 hover:text-white">
+                    <span class="material-symbols-outlined">shopping_bag</span>
+                    <span>Orders</span>
+                </a>
+                <a href="/adminusers.html" class="nav-item flex items-center gap-3 px-6 py-3 text-white/80 hover:text-white">
+                    <span class="material-symbols-outlined">people</span>
+                    <span>Users</span>
+                </a>
+                <div class="mt-10 pt-6 border-t border-white/10">
+                    <a href="#" class="nav-item flex items-center gap-3 px-6 py-3 text-white/80 hover:text-white" id="logoutBtn">
+                        <span class="material-symbols-outlined">logout</span>
+                        <span>Logout</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content flex-1 p-3 sm:p-4 md:p-6 lg:p-8" style="transition: all 0.3s ease;">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 sm:mb-6 md:mb-8">
+                <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-[#1a1a2e]">Manage Products</h1>
+                <button id="addProductBtn" class="bg-gradient-to-r from-[#4f6bff] to-[#7c8eff] text-white px-3 sm:px-4 py-2 rounded-lg hover:shadow-lg transition-all flex items-center gap-2 text-sm sm:text-base">
+                    <span class="material-symbols-outlined text-base sm:text-lg">add</span>
+                    Add Product
+                </button>
+            </div>
+
+            <!-- Products Table -->
+            <div class="bg-white rounded-xl shadow-sm p-3 sm:p-4 md:p-6">
+                <div class="table-responsive">
+                    <div id="productsTable">
+                        <div class="loader mx-auto my-8"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add/Edit Product Modal -->
+    <div id="productModal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-3 sm:p-4">
+        <div class="modal-container bg-white rounded-2xl p-4 sm:p-6 w-full max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4 sticky top-0 bg-white pb-2">
+                <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-[#1a1a2e]" id="modalTitle">Add Product</h2>
+                <button id="closeModalBtn" class="text-gray-500 hover:text-gray-700">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <form id="productForm" enctype="multipart/form-data">
+                <input type="hidden" id="productId">
+                <div class="space-y-3 sm:space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
+                        <input type="text" id="productName" class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4f6bff] focus:border-transparent text-sm sm:text-base" required>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                            <select id="productCategory" class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4f6bff] focus:border-transparent text-sm sm:text-base">
+                                <option value="">Select Category</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Color</label>
+                            <select id="productColor" class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4f6bff] focus:border-transparent text-sm sm:text-base">
+                                <option value="">Select Color</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Price (₦)</label>
+                            <input type="number" step="0.01" id="productPrice" class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4f6bff] focus:border-transparent text-sm sm:text-base" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Compare Price (₦)</label>
+                            <input type="number" step="0.01" id="productComparePrice" class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4f6bff] focus:border-transparent text-sm sm:text-base">
+                            <p class="text-xs text-gray-500 mt-1">Original price for discount display</p>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                        <textarea id="productDescription" rows="3" class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4f6bff] focus:border-transparent text-sm sm:text-base"></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Short Description</label>
+                        <textarea id="productShortDescription" rows="2" class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4f6bff] focus:border-transparent text-sm sm:text-base" placeholder="Brief description for product cards"></textarea>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">SKU</label>
+                            <input type="text" id="productSku" class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4f6bff] focus:border-transparent text-sm sm:text-base">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Stock Quantity</label>
+                            <input type="number" id="productStock" class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4f6bff] focus:border-transparent text-sm sm:text-base">
+                        </div>
+                    </div>
+                    
+                    <!-- Image Upload Section -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Product Image</label>
+                        <div class="mt-1 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+                            <div id="imagePreview" class="w-20 h-20 sm:w-24 sm:h-24 bg-gray-100 rounded-lg border border-gray-300 flex items-center justify-center overflow-hidden">
+                                <span class="material-symbols-outlined text-gray-400 text-3xl sm:text-4xl">image</span>
+                            </div>
+                            <div class="flex-1 w-full">
+                                <input type="file" id="productImage" accept="image/*" class="w-full text-xs sm:text-sm text-gray-500 file:mr-3 sm:file:mr-4 file:py-1.5 sm:file:py-2 file:px-3 sm:file:px-4 file:rounded-lg file:border-0 file:text-xs sm:file:text-sm file:font-semibold file:bg-[#4f6bff] file:text-white hover:file:bg-[#3a5be0]">
+                                <p class="text-xs text-gray-500 mt-1">Upload JPG, PNG or GIF (Max 2MB)</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-wrap gap-3 sm:gap-4">
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" id="productActive" class="w-4 h-4 text-[#4f6bff]"> Active
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" id="productTrending" class="w-4 h-4 text-[#4f6bff]"> Trending
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" id="productFeatured" class="w-4 h-4 text-[#4f6bff]"> Featured
+                        </label>
+                    </div>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-5 sm:mt-6">
+                    <button type="submit" class="flex-1 bg-gradient-to-r from-[#4f6bff] to-[#7c8eff] text-white font-bold py-2 rounded-lg hover:shadow-lg transition-all text-sm sm:text-base">Save Product</button>
+                    <button type="button" id="cancelModalBtn" class="flex-1 bg-gray-200 text-gray-700 font-bold py-2 rounded-lg hover:bg-gray-300 transition-all text-sm sm:text-base">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let categoriesList = [];
+        let colorsList = [];
+
+        function showToast(message, isError = false) {
+            const toast = document.createElement('div');
+            toast.className = 'toast' + (isError ? ' toast-error' : '');
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function formatNaira(amount) {
+            return new Intl.NumberFormat('en-NG', {
+                style: 'currency',
+                currency: 'NGN',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(amount);
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+            document.body.style.overflow = sidebar.classList.contains('open') ? 'hidden' : '';
+        }
+
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        async function checkAdminLogin() {
+            try {
+                const response = await fetch('/api/admin/check');
+                const result = await response.json();
+                if (!result.success) {
+                    window.location.href = '/adminlogin.html';
+                } else {
+                    await loadCategories();
+                    await loadColors();
+                    await loadProducts();
+                }
+            } catch (error) {
+                window.location.href = '/adminlogin.html';
+            }
+        }
+
+        async function loadCategories() {
+            try {
+                const response = await fetch('/api/categories');
+                const result = await response.json();
+                if (result.success) {
+                    categoriesList = result.categories;
+                    const select = document.getElementById('productCategory');
+                    select.innerHTML = '<option value="">Select Category</option>' + 
+                        categoriesList.map(cat => `<option value="${cat.id}">${escapeHtml(cat.name)}</option>`).join('');
+                }
+            } catch (error) {
+                console.error('Error loading categories:', error);
+            }
+        }
+
+        async function loadColors() {
+            try {
+                const response = await fetch('/api/colors');
+                const result = await response.json();
+                if (result.success) {
+                    colorsList = result.colors;
+                    const select = document.getElementById('productColor');
+                    select.innerHTML = '<option value="">Select Color</option>' + 
+                        colorsList.map(color => `<option value="${color.id}">${escapeHtml(color.name)}</option>`).join('');
+                }
+            } catch (error) {
+                console.error('Error loading colors:', error);
+            }
+        }
+
+        async function loadProducts() {
+            try {
+                const response = await fetch('/api/admin/products/all');
+                const result = await response.json();
+                const container = document.getElementById('productsTable');
+                
+                if (result.success && result.products && result.products.length > 0) {
+                    container.innerHTML = `
+                        <div class="overflow-x-auto">
+                            <table class="w-full products-table min-w-[700px]">
+                                <thead class="border-b border-gray-200">
+                                    <tr class="text-left text-xs sm:text-sm text-gray-500">
+                                        <th class="pb-2 sm:pb-3">Image</th>
+                                        <th class="pb-2 sm:pb-3">ID</th>
+                                        <th class="pb-2 sm:pb-3">Name</th>
+                                        <th class="pb-2 sm:pb-3 hidden md:table-cell">Category</th>
+                                        <th class="pb-2 sm:pb-3 hidden lg:table-cell">Color</th>
+                                        <th class="pb-2 sm:pb-3">Price</th>
+                                        <th class="pb-2 sm:pb-3 hidden sm:table-cell">Stock</th>
+                                        <th class="pb-2 sm:pb-3 hidden md:table-cell">Status</th>
+                                        <th class="pb-2 sm:pb-3">Actions</th>
+                                    </td>
+                                </thead>
+                                <tbody>
+                                    ${result.products.map(product => `
+                                        <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                            <td class="py-2 sm:py-3 product-image-cell">
+                                                ${product.image_url ? `<img src="${product.image_url}" class="product-image" onerror="this.src='https://via.placeholder.com/50'">` : '<div class="w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 rounded-lg flex items-center justify-center"><span class="material-symbols-outlined text-gray-400 text-xl sm:text-2xl">image</span></div>'}
+                                              </td>
+                                            <td class="py-2 sm:py-3 text-xs sm:text-sm">${product.id}</td>
+                                            <td class="py-2 sm:py-3 text-xs sm:text-sm font-medium max-w-[120px] sm:max-w-[150px] break-words">${escapeHtml(product.name)}</td>
+                                            <td class="py-2 sm:py-3 text-xs sm:text-sm hidden md:table-cell">${escapeHtml(product.category_name) || '-'}</td>
+                                            <td class="py-2 sm:py-3 text-xs sm:text-sm hidden lg:table-cell">${escapeHtml(product.color_name) || '-'}</td>
+                                            <td class="py-2 sm:py-3 text-xs sm:text-sm font-semibold text-[#4f6bff]">${formatNaira(parseFloat(product.price))}</td>
+                                            <td class="py-2 sm:py-3 text-xs sm:text-sm hidden sm:table-cell">${product.stock_quantity || 0}</td>
+                                            <td class="py-2 sm:py-3 hidden md:table-cell">
+                                                <span class="px-2 py-1 text-xs rounded-full ${product.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
+                                                    ${product.is_active ? 'Active' : 'Inactive'}
+                                                </span>
+                                              </td>
+                                            <td class="py-2 sm:py-3">
+                                                <div class="action-buttons flex gap-1 sm:gap-2">
+                                                    <button onclick="editProduct(${product.id})" class="text-blue-600 hover:text-blue-800">
+                                                        <span class="material-symbols-outlined text-sm sm:text-base">edit</span>
+                                                    </button>
+                                                    <button onclick="deleteProduct(${product.id})" class="text-red-600 hover:text-red-800">
+                                                        <span class="material-symbols-outlined text-sm sm:text-base">delete</span>
+                                                    </button>
+                                                </div>
+                                              </td>
+                                            </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = '<p class="text-center text-gray-500 py-8">No products found</p>';
+                }
+            } catch (error) {
+                console.error('Error loading products:', error);
+                document.getElementById('productsTable').innerHTML = '<p class="text-center text-red-500 py-8">Failed to load products</p>';
+            }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        document.getElementById('productImage')?.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const preview = document.getElementById('imagePreview');
+                    preview.innerHTML = `<img src="${event.target.result}" class="w-full h-full object-cover rounded-lg">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function editProduct(id) {
+            fetch(`/api/product/${id}`)
+                .then(res => res.json())
+                .then(result => {
+                    if (result.success) {
+                        const product = result.product;
+                        document.getElementById('modalTitle').textContent = 'Edit Product';
+                        document.getElementById('productId').value = product.id;
+                        document.getElementById('productName').value = product.name;
+                        document.getElementById('productCategory').value = product.category_id || '';
+                        document.getElementById('productColor').value = product.color_id || '';
+                        document.getElementById('productPrice').value = product.price;
+                        document.getElementById('productComparePrice').value = product.compare_price || '';
+                        document.getElementById('productDescription').value = product.description || '';
+                        document.getElementById('productShortDescription').value = product.short_description || '';
+                        document.getElementById('productSku').value = product.sku || '';
+                        document.getElementById('productStock').value = product.stock_quantity || 0;
+                        document.getElementById('productActive').checked = product.is_active == 1;
+                        document.getElementById('productTrending').checked = product.is_trending == 1;
+                        document.getElementById('productFeatured').checked = product.is_featured == 1;
+                        
+                        document.getElementById('imagePreview').innerHTML = product.image_url ? 
+                            `<img src="${product.image_url}" class="w-full h-full object-cover rounded-lg">` : 
+                            '<span class="material-symbols-outlined text-gray-400 text-4xl">image</span>';
+                        
+                        document.getElementById('productModal').classList.remove('hidden');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching product:', error);
+                    showToast('Failed to load product details', true);
+                });
+        }
+
+        async function deleteProduct(id) {
+            if (confirm('Are you sure you want to delete this product?')) {
+                try {
+                    const response = await fetch('/api/admin/products/delete', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id })
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        await loadProducts();
+                        showToast('Product deleted successfully');
+                    } else {
+                        showToast(result.message || 'Failed to delete product', true);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    showToast('Network error', true);
+                }
+            }
+        }
+
+        document.getElementById('addProductBtn')?.addEventListener('click', () => {
+            document.getElementById('modalTitle').textContent = 'Add Product';
+            document.getElementById('productForm').reset();
+            document.getElementById('productId').value = '';
+            document.getElementById('productCategory').value = '';
+            document.getElementById('productColor').value = '';
+            document.getElementById('productActive').checked = true;
+            document.getElementById('productTrending').checked = false;
+            document.getElementById('productFeatured').checked = false;
+            document.getElementById('imagePreview').innerHTML = '<span class="material-symbols-outlined text-gray-400 text-4xl">image</span>';
+            document.getElementById('productModal').classList.remove('hidden');
+        });
+
+        document.getElementById('closeModalBtn')?.addEventListener('click', () => {
+            document.getElementById('productModal').classList.add('hidden');
+        });
+
+        document.getElementById('cancelModalBtn')?.addEventListener('click', () => {
+            document.getElementById('productModal').classList.add('hidden');
+        });
+
+        document.getElementById('productForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const id = document.getElementById('productId').value;
+            const formData = new FormData();
+            
+            formData.append('name', document.getElementById('productName').value);
+            formData.append('category_id', document.getElementById('productCategory').value || '');
+            formData.append('color_id', document.getElementById('productColor').value || '');
+            formData.append('price', document.getElementById('productPrice').value);
+            formData.append('compare_price', document.getElementById('productComparePrice').value || '');
+            formData.append('description', document.getElementById('productDescription').value);
+            formData.append('short_description', document.getElementById('productShortDescription').value);
+            formData.append('sku', document.getElementById('productSku').value);
+            formData.append('stock_quantity', document.getElementById('productStock').value);
+            formData.append('is_active', document.getElementById('productActive').checked ? 1 : 0);
+            formData.append('is_trending', document.getElementById('productTrending').checked ? 1 : 0);
+            formData.append('is_featured', document.getElementById('productFeatured').checked ? 1 : 0);
+            
+            const imageFile = document.getElementById('productImage').files[0];
+            if (imageFile) {
+                formData.append('image', imageFile);
+            }
+            
+            if (id) {
+                formData.append('id', id);
+            }
+            
+            const url = id ? '/api/admin/products/update' : '/api/admin/products/add';
+            
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Saving...';
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                if (result.success) {
+                    document.getElementById('productModal').classList.add('hidden');
+                    await loadProducts();
+                    showToast(id ? 'Product updated successfully!' : 'Product added successfully!');
+                } else {
+                    showToast(result.message || 'Failed to save product', true);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Network error', true);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        });
+
+        document.getElementById('logoutBtn')?.addEventListener('click', async (e) => {
+            e.preventDefault();
+            await fetch('/api/admin/logout', { method: 'POST' });
+            window.location.href = '/adminlogin.html';
+        });
+
+        // Close sidebar when clicking a link on mobile
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                if (window.innerWidth <= 1024) {
+                    closeSidebar();
+                }
+            });
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 1024) {
+                closeSidebar();
+                document.getElementById('sidebar').classList.remove('open');
+                document.body.style.overflow = '';
+            }
+        });
+
+        checkAdminLogin();
+    </script>  
+</body>
+</html>

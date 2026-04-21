@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Dashboard | PIO E-market</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        body { background: #f8f7fc; padding-bottom: 70px; }
+        .custom-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #e8e7f0; border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #c7c4e0; border-radius: 10px; }
+        .gradient-bg-card { background: linear-gradient(135deg, #4f6bff 0%, #7c8eff 100%); }
+        .product-card { transition: all 0.25s ease; }
+        .product-card:hover { transform: translateY(-4px); box-shadow: 0 20px 30px -12px rgba(79, 107, 255, 0.12); }
+        .stat-card { transition: all 0.2s; }
+        .stat-card:hover { transform: translateY(-2px); }
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(20px);
+            border-top: 1px solid #eeeef5; padding: 10px 20px 20px; z-index: 100;
+        }
+        @media (min-width: 1024px) { body { padding-bottom: 0; } .bottom-nav { display: none; } }
+        .side-nav-item { transition: all 0.2s; cursor: pointer; }
+        .side-nav-item.active { background: #e8ecff; color: #4f6bff; font-weight: 600; }
+        .loader { border: 3px solid #e8e7f0; border-top: 3px solid #4f6bff; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #2a2b3a; color: white; padding: 10px 20px; border-radius: 40px; font-size: 14px; z-index: 200; animation: fadeOut 3s ease forwards; }
+        @keyframes fadeOut { 0% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
+        .product-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .product-img-container {
+            width: 100%;
+            height: 160px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f5f4fa 0%, #e8e7f0 100%);
+            position: relative;
+        }
+        .wishlist-heart {
+            transition: all 0.2s ease;
+        }
+        .wishlist-heart:hover {
+            transform: scale(1.1);
+        }
+        .sold-out-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 15;
+        }
+        .sold-out-text {
+            background: #c62828;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: bold;
+            transform: rotate(-15deg);
+        }
+
+        /* Responsive improvements */
+        @media (max-width: 640px) {
+            .stat-card p.text-2xl {
+                font-size: 1.25rem;
+            }
+            .product-card h3 {
+                font-size: 0.75rem;
+            }
+            .product-card .text-sm {
+                font-size: 0.7rem;
+            }
+            .sold-out-text {
+                font-size: 10px;
+                padding: 3px 8px;
+            }
+        }
+
+        @media (min-width: 641px) and (max-width: 1024px) {
+            .grid-cols-2 {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+    </style>
+</head>
+<body class="bg-[#f8f7fc] antialiased">
+
+    <div id="loadingOverlay" class="fixed inset-0 bg-white/95 z-50 flex items-center justify-center">
+        <div class="text-center"><div class="loader mx-auto mb-4"></div><p class="text-[#4f6bff] font-medium">Loading your dashboard...</p></div>
+    </div>
+
+    <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-xl border-b border-[#eeeef5] shadow-sm">
+        <div class="px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-2 sm:gap-3">
+                <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl gradient-bg-card flex items-center justify-center shadow-sm">
+                    <span class="text-white font-extrabold text-base sm:text-lg">P</span>
+                </div>
+                <div class="leading-tight">
+                    <h1 class="text-base sm:text-xl font-extrabold tracking-tight text-[#4f6bff]">PIO E-market</h1>
+                    <p class="text-[8px] sm:text-[10px] font-medium text-[#a5a3b5] tracking-wide">curated atelier</p>
+                </div>
+            </div>
+            <div class="hidden md:flex items-center bg-[#f5f4fa] rounded-full px-4 py-2 w-80 border border-[#e8e7f0] focus-within:ring-2 focus-within:ring-[#4f6bff]/20">
+                <span class="material-symbols-outlined text-[#a5a3b5] text-xl">search</span>
+                <input type="text" id="searchInput" placeholder="Search products..." class="bg-transparent border-0 focus:outline-none text-sm w-full ml-2 text-[#1a1b22] placeholder:text-[#a5a3b5]">
+            </div>
+            <div class="flex items-center gap-1 sm:gap-4">
+                <button class="relative p-1.5 sm:p-2 rounded-full hover:bg-[#f0eef8] transition">
+                    <span class="material-symbols-outlined text-[#8a88a0] text-xl sm:text-2xl">notifications_none</span>
+                    <span class="absolute top-0 right-0 w-1.5 h-1.5 sm:w-2 sm:h-2 bg-[#ff6b6b] rounded-full ring-2 ring-white"></span>
+                </button>
+                <a href="/cart" class="relative p-1.5 sm:p-2 rounded-full hover:bg-[#f0eef8] transition">
+                    <span class="material-symbols-outlined text-[#8a88a0] text-xl sm:text-2xl">shopping_cart</span>
+                    <span class="absolute -top-1 -right-1 bg-[#ff6b6b] text-white text-[8px] sm:text-[10px] rounded-full px-1 sm:px-1.5 py-0.5 min-w-[16px] sm:min-w-[18px] text-center" id="cartBadge">0</span>
+                </a>
+                <div class="flex items-center gap-1 sm:gap-2 cursor-pointer hover:bg-[#f0eef8] rounded-full pl-1.5 sm:pl-2 pr-2 sm:pr-3 py-1 transition" id="userMenuBtn">
+                    <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full gradient-bg-card flex items-center justify-center text-white font-semibold text-xs sm:text-sm shadow-sm" id="userInitial">JD</div>
+                    <span class="text-xs sm:text-sm font-medium text-[#2a2b3a] hidden sm:inline-block" id="userName">Loading...</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex flex-col lg:flex-row max-w-[1600px] mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6 gap-4 sm:gap-6">
+        <aside class="hidden lg:block lg:w-72 w-full bg-white rounded-2xl shadow-sm border border-[#f0eef8] p-4 h-fit sticky top-24">
+            <div class="flex flex-col gap-1">
+                <div class="flex items-center gap-3 px-4 py-3 bg-[#e8ecff] rounded-xl text-[#4f6bff] font-semibold">
+                    <span class="material-symbols-outlined">dashboard</span><span>Dashboard</span>
+                </div>
+                <div class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-[#6b6a7e] hover:bg-[#f5f4fa] transition side-nav-item cursor-pointer" onclick="window.location.href='/orders'">
+                    <span class="material-symbols-outlined">shopping_bag</span><span>My Orders</span>
+                </div>
+                <div class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-[#6b6a7e] hover:bg-[#f5f4fa] transition side-nav-item cursor-pointer" onclick="window.location.href='/wishlist'">
+                    <span class="material-symbols-outlined">favorite</span><span>Wishlist</span>
+                </div>
+                <div class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-[#6b6a7e] hover:bg-[#f5f4fa] transition side-nav-item cursor-pointer" onclick="window.location.href='/offers'">
+                    <span class="material-symbols-outlined">local_offer</span><span>Offers & Perks</span>
+                </div>
+                <div class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-[#6b6a7e] hover:bg-[#f5f4fa] transition side-nav-item cursor-pointer" onclick="window.location.href='/profile'">
+                    <span class="material-symbols-outlined">person</span><span>Profile Settings</span>
+                </div>
+                <a href="/support" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-[#6b6a7e] hover:bg-[#f5f4fa] transition side-nav-item">
+                    <span class="material-symbols-outlined">help</span><span>Support</span>
+                </a>
+            </div>
+            <div class="mt-8 p-4 rounded-xl gradient-bg-card text-white shadow-md">
+                <div class="flex items-center gap-3"><span class="material-symbols-outlined text-white/90">workspace_premium</span><span class="font-bold text-sm">Atelier Member</span></div>
+                <p class="text-xs text-white/80 mt-2">Exclusive early access & private sales</p>
+                <div class="mt-3 w-full bg-white/20 rounded-full h-1.5"><div class="bg-white w-2/3 h-1.5 rounded-full"></div></div>
+                <p class="text-[10px] font-semibold mt-2 text-white/80">✨ 2 more purchases to Gold tier</p>
+            </div>
+        </aside>
+
+        <main class="flex-1 space-y-4 sm:space-y-6 pb-20 lg:pb-0">
+            <div class="rounded-2xl p-4 sm:p-6 text-white shadow-sm" style="background: linear-gradient(135deg, #6b85ff 0%, #9aaeff 100%);">
+                <div class="flex justify-between items-start flex-wrap gap-3 sm:gap-4">
+                    <div>
+                        <p class="text-white/85 text-xs sm:text-sm">Welcome back,</p>
+                        <h2 class="text-xl sm:text-3xl font-extrabold break-words" id="welcomeUserName">Loading...</h2>
+                        <p class="text-white/75 text-xs sm:text-sm mt-1 break-all" id="userEmail"></p>
+                    </div>
+                    <div class="bg-white/25 rounded-full px-3 sm:px-4 py-1 sm:py-2 backdrop-blur-sm">
+                        <span class="text-xs sm:text-sm font-semibold text-white" id="userRole">Customer</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                <div class="bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-[#f0eef8] stat-card">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-[#a5a3b5] text-xs sm:text-sm">Total Orders</p>
+                            <p class="text-xl sm:text-2xl font-extrabold text-[#2a2b3a] mt-1" id="totalOrders">0</p>
+                        </div>
+                        <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#e8ecff] flex items-center justify-center">
+                            <span class="material-symbols-outlined text-[#4f6bff] text-base sm:text-xl">shopping_cart</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-[#f0eef8] stat-card">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-[#a5a3b5] text-xs sm:text-sm">Total Spent</p>
+                            <p class="text-xl sm:text-2xl font-extrabold text-[#2a2b3a] mt-1" id="totalSpent">₦0</p>
+                        </div>
+                        <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#ffe8e0] flex items-center justify-center">
+                            <span class="material-symbols-outlined text-[#ff8a5c] text-base sm:text-xl">payments</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-[#f0eef8] stat-card">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-[#a5a3b5] text-xs sm:text-sm">Wishlist</p>
+                            <p class="text-xl sm:text-2xl font-extrabold text-[#2a2b3a] mt-1" id="wishlistCount">0</p>
+                        </div>
+                        <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#ffe8f0] flex items-center justify-center">
+                            <span class="material-symbols-outlined text-[#ff85a1] text-base sm:text-xl">favorite</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-[#f0eef8] stat-card">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-[#a5a3b5] text-xs sm:text-sm">Products</p>
+                            <p class="text-xl sm:text-2xl font-extrabold text-[#2a2b3a] mt-1" id="totalProducts">0</p>
+                        </div>
+                        <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#e0f7e8] flex items-center justify-center">
+                            <span class="material-symbols-outlined text-[#4caf7f] text-base sm:text-xl">inventory</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categories Section -->
+            <div class="bg-white rounded-2xl p-4 sm:p-5 border border-[#f0eef8]">
+                <div class="flex justify-between items-center mb-3 sm:mb-4">
+                    <h2 class="text-lg sm:text-xl font-bold text-[#2a2b3a]">📁 Shop by Category</h2>
+                    <button class="text-xs sm:text-sm text-[#4f6bff] font-medium" onclick="loadAllProducts()">View All →</button>
+                </div>
+                <div id="categoriesContainer" class="flex overflow-x-auto gap-3 pb-2 custom-scroll">
+                    <div class="text-center py-4 px-6 bg-[#f5f4fa] rounded-xl animate-pulse">Loading categories...</div>
+                </div>
+            </div>
+
+            <!-- Trending Products Grid with Images -->
+            <div class="bg-white rounded-2xl p-4 sm:p-5 border border-[#f0eef8]">
+                <div class="flex justify-between items-center mb-4 sm:mb-5">
+                    <h2 class="text-lg sm:text-xl font-bold text-[#2a2b3a]">🔥 Trending Now</h2>
+                </div>
+                <div id="productsContainer" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+                    <div class="text-center py-8 col-span-4 text-[#a5a3b5]">Loading products...</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MOBILE BOTTOM NAVIGATION -->
+    <nav class="bottom-nav lg:hidden">
+        <div class="flex justify-around items-center">
+            <a href="/dashboard" class="nav-item flex flex-col items-center gap-1 text-[#4f6bff]">
+                <span class="material-symbols-outlined text-xl sm:text-2xl">home</span>
+                <span class="text-[8px] sm:text-[10px]">Home</span>
+            </a>
+            <a href="/orders" class="nav-item flex flex-col items-center gap-1 text-[#a5a3b5]">
+                <span class="material-symbols-outlined text-xl sm:text-2xl">shopping_bag</span>
+                <span class="text-[8px] sm:text-[10px]">Orders</span>
+            </a>
+            <a href="/cart" class="nav-item flex flex-col items-center gap-1 text-[#a5a3b5] relative">
+                <span class="material-symbols-outlined text-xl sm:text-2xl">shopping_cart</span>
+                <span class="text-[8px] sm:text-[10px]">Cart</span>
+                <span class="absolute -top-1 right-1/4 bg-[#ff6b6b] text-white text-[8px] rounded-full px-1 py-0.5" id="cartBadgeMobile">0</span>
+            </a>
+            <a href="/wishlist" class="nav-item flex flex-col items-center gap-1 text-[#a5a3b5]">
+                <span class="material-symbols-outlined text-xl sm:text-2xl">favorite</span>
+                <span class="text-[8px] sm:text-[10px]">Wishlist</span>
+            </a>
+            <a href="/offers" class="nav-item flex flex-col items-center gap-1 text-[#a5a3b5]">
+                <span class="material-symbols-outlined text-xl sm:text-2xl">local_offer</span>
+                <span class="text-[8px] sm:text-[10px]">Offers</span>
+            </a>
+            <a href="/profile" class="nav-item flex flex-col items-center gap-1 text-[#a5a3b5]">
+                <span class="material-symbols-outlined text-xl sm:text-2xl">person</span>
+                <span class="text-[8px] sm:text-[10px]">Profile</span>
+            </a>
+        </div>
+    </nav>
+
+    <script>
+        let currentUser = null;
+        let allProducts = [];
+        let categoriesList = [];
+
+        function formatNaira(amount) {
+            return new Intl.NumberFormat('en-NG', {
+                style: 'currency',
+                currency: 'NGN',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(amount);
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        async function checkLoginStatus() {
+            try {
+                const response = await fetch('/api/me');
+                const result = await response.json();
+                if (result.success) {
+                    currentUser = result.user;
+                    displayUserInfo(currentUser);
+                    await loadDashboardStats();
+                    await loadCategories();
+                    await loadAllProductsFromDB();
+                } else {
+                    window.location.href = '/login';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                window.location.href = '/login';
+            } finally {
+                document.getElementById('loadingOverlay').style.display = 'none';
+            }
+        }
+
+        function displayUserInfo(user) {
+            const initials = user.full_name.split(' ').map(n => n[0]).join('').toUpperCase();
+            document.getElementById('userInitial').textContent = initials.substring(0, 2);
+            document.getElementById('userName').textContent = user.full_name.split(' ')[0];
+            document.getElementById('welcomeUserName').textContent = user.full_name;
+            document.getElementById('userEmail').textContent = user.email;
+            document.getElementById('userRole').textContent = user.role || 'Customer';
+            document.title = `Dashboard | ${user.full_name}`;
+        }
+
+        async function loadDashboardStats() {
+            try {
+                const ordersRes = await fetch(`/api/user/orders/count`);
+                const ordersData = await ordersRes.json();
+                document.getElementById('totalOrders').textContent = ordersData.count || 0;
+                
+                const spentRes = await fetch(`/api/user/total-spent`);
+                const spentData = await spentRes.json();
+                document.getElementById('totalSpent').textContent = formatNaira(spentData.total || 0);
+                
+                const wishlistRes = await fetch(`/api/user/wishlist/count`);
+                const wishlistData = await wishlistRes.json();
+                document.getElementById('wishlistCount').textContent = wishlistData.count || 0;
+                
+                const productsRes = await fetch('/api/products/count');
+                const productsData = await productsRes.json();
+                document.getElementById('totalProducts').textContent = productsData.count || 0;
+                
+                const cartRes = await fetch('/api/cart/count');
+                const cartData = await cartRes.json();
+                const cartBadge = document.getElementById('cartBadge');
+                const cartBadgeMobile = document.getElementById('cartBadgeMobile');
+                if (cartBadge) cartBadge.textContent = cartData.count || 0;
+                if (cartBadgeMobile) cartBadgeMobile.textContent = cartData.count || 0;
+                
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        async function loadCategories() {
+            try {
+                const response = await fetch('/api/categories');
+                const data = await response.json();
+                const container = document.getElementById('categoriesContainer');
+                
+                if (data.success && data.categories.length > 0) {
+                    categoriesList = data.categories;
+                    container.innerHTML = categoriesList.map(cat => `
+                        <div class="flex-shrink-0 text-center cursor-pointer hover:transform hover:-translate-y-1 transition-all" onclick="filterByCategoryId(${cat.id}, '${cat.name}')">
+                            <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-[#e8ecff] to-[#f0eef8] flex items-center justify-center mx-auto mb-2">
+                                <span class="material-symbols-outlined text-2xl sm:text-3xl text-[#4f6bff]">${getCategoryIcon(cat.name)}</span>
+                            </div>
+                            <p class="text-[10px] sm:text-xs font-medium text-[#2a2b3a]">${escapeHtml(cat.name)}</p>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<div class="text-center py-4 px-6 bg-[#f5f4fa] rounded-xl text-[#a5a3b5]">No categories found</div>';
+                }
+            } catch (error) {
+                console.error('Error loading categories:', error);
+                document.getElementById('categoriesContainer').innerHTML = '<div class="text-center py-4 px-6 bg-[#f5f4fa] rounded-xl text-[#a5a3b5]">Failed to load categories</div>';
+            }
+        }
+
+        function getCategoryIcon(categoryName) {
+            const name = categoryName.toLowerCase();
+            if (name.includes('clothing')) return 'checkroom';
+            if (name.includes('shoe')) return 'footprint';
+            if (name.includes('watch')) return 'watch';
+            if (name.includes('jewelry')) return 'diamond';
+            if (name.includes('bag')) return 'luggage';
+            if (name.includes('furniture')) return 'weekend';
+            if (name.includes('electronic')) return 'devices';
+            if (name.includes('beauty')) return 'spa';
+            if (name.includes('sport')) return 'sports_basketball';
+            if (name.includes('accessories')) return 'watch';
+            return 'category';
+        }
+
+        async function loadAllProductsFromDB() {
+            try {
+                const response = await fetch('/api/trending-products');
+                const data = await response.json();
+                const container = document.getElementById('productsContainer');
+                
+                if (data.success && data.products.length > 0) {
+                    allProducts = data.products;
+                    renderProducts(allProducts);
+                } else {
+                    container.innerHTML = '<div class="text-center py-8 col-span-4 text-[#a5a3b5]">No products found</div>';
+                }
+            } catch (error) {
+                console.error('Error loading products:', error);
+                document.getElementById('productsContainer').innerHTML = '<div class="text-center py-8 col-span-4 text-[#a5a3b5]">Failed to load products</div>';
+            }
+        }
+
+        function renderProducts(products) {
+            const container = document.getElementById('productsContainer');
+            if (products.length === 0) {
+                container.innerHTML = '<div class="text-center py-8 col-span-4 text-[#a5a3b5]">No products found in this category</div>';
+                return;
+            }
+            
+            container.innerHTML = products.map(product => {
+                const stockQuantity = product.stock_quantity || 0;
+                const isOutOfStock = stockQuantity <= 0;
+                const originalPrice = parseFloat(product.price);
+                const comparePrice = product.compare_price ? parseFloat(product.compare_price) : null;
+                
+                return `
+                    <div class="product-card bg-white rounded-xl overflow-hidden border border-[#f0eef8] cursor-pointer" onclick="viewProduct(${product.id})">
+                        <div class="product-img-container">
+                            ${product.image_url ? 
+                                `<img src="${product.image_url}" class="product-image" alt="${escapeHtml(product.name)}" onerror="this.src='https://via.placeholder.com/200?text=No+Image'">` : 
+                                `<div class="flex items-center justify-center w-full h-full">
+                                    <span class="material-symbols-outlined text-4xl sm:text-5xl text-[#b8b6cc]">${getProductIcon(product.name)}</span>
+                                </div>`
+                            }
+                            ${isOutOfStock ? `
+                                <div class="sold-out-overlay">
+                                    <span class="sold-out-text">SOLD OUT</span>
+                                </div>
+                            ` : ''}
+                            ${comparePrice && comparePrice > originalPrice ? `<span class="absolute top-2 right-2 bg-[#ff6b6b] text-white text-[8px] sm:text-[10px] font-bold px-1 sm:px-2 py-0.5 sm:py-1 rounded-full z-10">-${Math.round((1 - originalPrice / comparePrice) * 100)}%</span>` : ''}
+                            <button class="absolute top-2 left-2 w-6 h-6 sm:w-8 sm:h-8 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-red-50 transition-colors z-10 wishlist-heart" onclick="event.stopPropagation(); addToWishlist(${product.id})">
+                                <span class="material-symbols-outlined text-red-400 text-sm sm:text-base">favorite</span>
+                            </button>
+                        </div>
+                        <div class="p-2 sm:p-3">
+                            <h3 class="font-bold text-xs sm:text-sm text-[#2a2b3a] line-clamp-1">${escapeHtml(product.name)}</h3>
+                            <div class="flex items-center gap-1 sm:gap-2 mt-1">
+                                <p class="text-[#4f6bff] font-bold text-xs sm:text-sm">${formatNaira(originalPrice)}</p>
+                                ${comparePrice && comparePrice > originalPrice ? `<p class="text-[#a5a3b5] text-[10px] sm:text-xs line-through">${formatNaira(comparePrice)}</p>` : ''}
+                            </div>
+                            <button class="mt-2 w-full py-1 sm:py-1.5 text-[10px] sm:text-xs border rounded-lg transition ${isOutOfStock ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed' : 'border-[#e0def0] hover:bg-[#4f6bff] hover:text-white hover:border-[#4f6bff]'}" 
+                                onclick="event.stopPropagation(); ${!isOutOfStock ? `addToCart(${product.id})` : ''}" 
+                                ${isOutOfStock ? 'disabled' : ''}>
+                                ${isOutOfStock ? 'Sold Out' : 'Add to Cart'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filterByCategoryId(categoryId, categoryName) {
+            showToast(`Showing ${categoryName} products`);
+            const filtered = allProducts.filter(product => product.category_id == categoryId);
+            if (filtered.length === 0) {
+                showToast(`No products found in ${categoryName}`);
+            }
+            renderProducts(filtered);
+        }
+
+        function loadAllProducts() {
+            renderProducts(allProducts);
+            showToast('Showing all products');
+        }
+
+        function getProductIcon(productName) {
+            const name = productName.toLowerCase();
+            if (name.includes('watch')) return 'watch';
+            if (name.includes('blazer') || name.includes('shirt')) return 'checkroom';
+            if (name.includes('chair') || name.includes('sofa')) return 'weekend';
+            if (name.includes('headphone')) return 'headphones';
+            if (name.includes('bag')) return 'luggage';
+            return 'shopping_bag';
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        async function addToCart(productId) {
+            if (!currentUser) {
+                showToast('Please login to add items to cart');
+                window.location.href = '/login';
+                return;
+            }
+            try {
+                const response = await fetch('/api/cart/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ product_id: productId, quantity: 1 })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showToast('✅ Added to cart!');
+                    await loadDashboardStats();
+                } else {
+                    showToast(result.message || 'Failed to add to cart');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Error adding to cart');
+            }
+        }
+
+        async function addToWishlist(productId) {
+            if (!currentUser) {
+                showToast('Please login to add to wishlist');
+                window.location.href = '/login';
+                return;
+            }
+            try {
+                const response = await fetch('/api/wishlist/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ product_id: productId })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showToast('❤️ Added to wishlist!');
+                    await loadDashboardStats();
+                } else {
+                    showToast(result.message || 'Already in wishlist');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Error adding to wishlist');
+            }
+        }
+
+        function viewProduct(productId) {
+            window.location.href = `/product?id=${productId}`;
+        }
+
+        async function logout() {
+            try {
+                const response = await fetch('/api/logout', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+                const result = await response.json();
+                if (result.success) window.location.href = '/login';
+                else alert('Logout failed');
+            } catch (error) {
+                console.error('Logout error:', error);
+                alert('Network error');
+            }
+        }
+
+        function setupMobileNavigation() {
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                if (item.tagName === 'BUTTON') {
+                    item.addEventListener('click', () => {
+                        const navType = item.getAttribute('data-nav');
+                        if (navType === 'wishlist') {
+                            window.location.href = '/wishlist';
+                        }
+                    });
+                }
+            });
+        }
+
+        document.getElementById('searchInput')?.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            if (searchTerm.length < 2) {
+                renderProducts(allProducts);
+                return;
+            }
+            const filtered = allProducts.filter(p => p.name.toLowerCase().includes(searchTerm));
+            renderProducts(filtered);
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            checkLoginStatus();
+            setupMobileNavigation();
+        });
+    </script>
+</body>
+</html>

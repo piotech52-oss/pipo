@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>My Profile | PIO E-market</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        body { background: #f8f7fc; }
+        .gradient-bg-card { background: linear-gradient(135deg, #4f6bff 0%, #7c8eff 100%); }
+        .loader {
+            border: 3px solid #e8e7f0;
+            border-top: 3px solid #4f6bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2a2b3a;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 40px;
+            font-size: 14px;
+            z-index: 200;
+            animation: fadeOut 3s ease forwards;
+        }
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            70% { opacity: 1; }
+            100% { opacity: 0; visibility: hidden; }
+        }
+        .profile-tab {
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .profile-tab.active {
+            background: #e8ecff;
+            color: #4f6bff;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="bg-[#f8f7fc] antialiased">
+
+    <div id="loadingOverlay" class="fixed inset-0 bg-white/95 z-50 flex items-center justify-center">
+        <div class="text-center">
+            <div class="loader mx-auto mb-4"></div>
+            <p class="text-[#4f6bff] font-medium">Loading profile...</p>
+        </div>
+    </div>
+
+    <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-xl border-b border-[#eeeef5] shadow-sm">
+        <div class="px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+            <a href="/dashboard" class="flex items-center gap-3 cursor-pointer">
+                <div class="w-9 h-9 rounded-xl gradient-bg-card flex items-center justify-center shadow-sm">
+                    <span class="text-white font-extrabold text-lg">P</span>
+                </div>
+                <div class="leading-tight">
+                    <h1 class="text-xl font-extrabold tracking-tight text-[#4f6bff]">PIO E-market</h1>
+                    <p class="text-[10px] font-medium text-[#a5a3b5] tracking-wide">curated atelier</p>
+                </div>
+            </a>
+            <div class="flex items-center gap-4">
+                <a href="/dashboard" class="text-sm text-[#6b6a7e] hover:text-[#4f6bff] transition flex items-center gap-1">
+                    <span class="material-symbols-outlined text-lg">arrow_back</span>
+                    <span class="hidden sm:inline">Back to Dashboard</span>
+                </a>
+                <div class="flex items-center gap-2 cursor-pointer hover:bg-[#f0eef8] rounded-full pl-2 pr-3 py-1 transition" id="userMenuBtn">
+                    <div class="w-8 h-8 rounded-full gradient-bg-card flex items-center justify-center text-white font-semibold text-sm shadow-sm" id="userInitial">JD</div>
+                    <span class="text-sm font-medium text-[#2a2b3a] hidden sm:inline-block" id="userName">Loading...</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="mb-8">
+            <h1 class="text-3xl font-extrabold text-[#2a2b3a]">👤 My Profile</h1>
+            <p class="text-[#a5a3b5] mt-1">Manage your account information</p>
+        </div>
+
+        <div class="flex flex-col md:flex-row gap-6">
+            <!-- Sidebar Tabs -->
+            <div class="md:w-64 bg-white rounded-2xl border border-[#f0eef8] p-4 h-fit sticky top-24">
+                <div class="flex flex-col gap-1">
+                    <div class="profile-tab active px-4 py-3 rounded-xl" data-tab="info">
+                        <span class="material-symbols-outlined align-middle mr-2">person</span> Personal Info
+                    </div>
+                    <div class="profile-tab px-4 py-3 rounded-xl text-[#6b6a7e]" data-tab="password">
+                        <span class="material-symbols-outlined align-middle mr-2">lock</span> Change Password
+                    </div>
+                    <div class="profile-tab px-4 py-3 rounded-xl text-[#6b6a7e]" data-tab="address">
+                        <span class="material-symbols-outlined align-middle mr-2">home</span> Address Book
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="flex-1">
+                <!-- Personal Info Tab -->
+                <div id="infoTab" class="tab-content bg-white rounded-2xl border border-[#f0eef8] p-6">
+                    <h2 class="text-xl font-bold text-[#2a2b3a] mb-4">Personal Information</h2>
+                    <form id="profileForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-[#6b6a7e] mb-1">Full Name</label>
+                            <input type="text" id="fullName" class="w-full px-4 py-2 border border-[#e0def0] rounded-lg focus:ring-2 focus:ring-[#4f6bff] focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-[#6b6a7e] mb-1">Email Address</label>
+                            <input type="email" id="email" class="w-full px-4 py-2 border border-[#e0def0] rounded-lg bg-[#f5f4fa] cursor-not-allowed" readonly disabled>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-[#6b6a7e] mb-1">Phone Number</label>
+                            <input type="tel" id="phone" class="w-full px-4 py-2 border border-[#e0def0] rounded-lg focus:ring-2 focus:ring-[#4f6bff] focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-[#6b6a7e] mb-1">Member Since</label>
+                            <input type="text" id="memberSince" class="w-full px-4 py-2 border border-[#e0def0] rounded-lg bg-[#f5f4fa] cursor-not-allowed" readonly disabled>
+                        </div>
+                        <button type="submit" class="gradient-bg-card text-white font-bold py-2 px-6 rounded-lg hover:shadow-lg transition-all">Save Changes</button>
+                    </form>
+                </div>
+
+                <!-- Change Password Tab -->
+                <div id="passwordTab" class="tab-content bg-white rounded-2xl border border-[#f0eef8] p-6 hidden">
+                    <h2 class="text-xl font-bold text-[#2a2b3a] mb-4">Change Password</h2>
+                    <form id="passwordForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-[#6b6a7e] mb-1">Current Password</label>
+                            <input type="password" id="currentPassword" class="w-full px-4 py-2 border border-[#e0def0] rounded-lg focus:ring-2 focus:ring-[#4f6bff] focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-[#6b6a7e] mb-1">New Password</label>
+                            <input type="password" id="newPassword" class="w-full px-4 py-2 border border-[#e0def0] rounded-lg focus:ring-2 focus:ring-[#4f6bff] focus:border-transparent">
+                            <p class="text-xs text-[#a5a3b5] mt-1">Must be at least 6 characters</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-[#6b6a7e] mb-1">Confirm New Password</label>
+                            <input type="password" id="confirmPassword" class="w-full px-4 py-2 border border-[#e0def0] rounded-lg focus:ring-2 focus:ring-[#4f6bff] focus:border-transparent">
+                        </div>
+                        <button type="submit" class="gradient-bg-card text-white font-bold py-2 px-6 rounded-lg hover:shadow-lg transition-all">Update Password</button>
+                    </form>
+                </div>
+
+                <!-- Address Book Tab -->
+                <div id="addressTab" class="tab-content bg-white rounded-2xl border border-[#f0eef8] p-6 hidden">
+                    <h2 class="text-xl font-bold text-[#2a2b3a] mb-4">Address Book</h2>
+                    <p class="text-[#a5a3b5] mb-4">Address book feature coming soon!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+
+        function showToast(message, isError = false) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            if (isError) toast.style.background = '#ff6b6b';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        async function checkLoginStatus() {
+            try {
+                const response = await fetch('/api/me');
+                const result = await response.json();
+                if (result.success) {
+                    currentUser = result.user;
+                    displayUserInfo(currentUser);
+                    await loadProfile();
+                } else {
+                    window.location.href = '/login';
+                }
+            } catch (error) {
+                window.location.href = '/login';
+            } finally {
+                document.getElementById('loadingOverlay').style.display = 'none';
+            }
+        }
+
+        function displayUserInfo(user) {
+            const initials = user.full_name.split(' ').map(n => n[0]).join('').toUpperCase();
+            document.getElementById('userInitial').textContent = initials.substring(0, 2);
+            document.getElementById('userName').textContent = user.full_name.split(' ')[0];
+        }
+
+        async function loadProfile() {
+            document.getElementById('fullName').value = currentUser.full_name;
+            document.getElementById('email').value = currentUser.email;
+            document.getElementById('phone').value = currentUser.phone || '';
+            
+            // Member since (from created_at - you may need to fetch this)
+            document.getElementById('memberSince').value = new Date().toLocaleDateString();
+        }
+
+        // Profile update
+        document.getElementById('profileForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const full_name = document.getElementById('fullName').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            
+            if (!full_name) {
+                showToast('Name is required', true);
+                return;
+            }
+            
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+            
+            try {
+                const response = await fetch('/api/profile/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ full_name, phone })
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('Profile updated successfully!');
+                    currentUser.full_name = full_name;
+                    displayUserInfo(currentUser);
+                } else {
+                    showToast(result.message || 'Failed to update profile', true);
+                }
+            } catch (error) {
+                showToast('Network error', true);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        });
+        
+        // Password change
+        document.getElementById('passwordForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const current_password = document.getElementById('currentPassword').value;
+            const new_password = document.getElementById('newPassword').value;
+            const confirm_password = document.getElementById('confirmPassword').value;
+            
+            if (!current_password || !new_password || !confirm_password) {
+                showToast('All password fields are required', true);
+                return;
+            }
+            
+            if (new_password !== confirm_password) {
+                showToast('New passwords do not match', true);
+                return;
+            }
+            
+            if (new_password.length < 6) {
+                showToast('Password must be at least 6 characters', true);
+                return;
+            }
+            
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Updating...';
+            
+            try {
+                const response = await fetch('/api/profile/change-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ current_password, new_password, confirm_password })
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('Password changed successfully!');
+                    document.getElementById('passwordForm').reset();
+                } else {
+                    showToast(result.message || 'Failed to change password', true);
+                }
+            } catch (error) {
+                showToast('Network error', true);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        });
+
+        // Tab switching
+        const tabs = document.querySelectorAll('.profile-tab');
+        const contents = document.querySelectorAll('.tab-content');
+        
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.getAttribute('data-tab');
+                
+                tabs.forEach(t => {
+                    t.classList.remove('active');
+                    t.classList.add('text-[#6b6a7e]');
+                });
+                tab.classList.add('active');
+                tab.classList.remove('text-[#6b6a7e]');
+                
+                contents.forEach(content => {
+                    content.classList.add('hidden');
+                });
+                
+                document.getElementById(`${tabId}Tab`).classList.remove('hidden');
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', checkLoginStatus);
+    </script>
+</body>
+</html>

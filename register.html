@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Identity Services SDK -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "inverse-on-surface": "#f2eff9",
+                    "surface": "#fbf8ff",
+                    "tertiary-fixed-dim": "#ffb784",
+                    "background": "#fbf8ff",
+                    "on-secondary-fixed-variant": "#3a485b",
+                    "secondary-container": "#d5e3fc",
+                    "on-tertiary": "#ffffff",
+                    "tertiary-fixed": "#ffdcc6",
+                    "on-secondary": "#ffffff",
+                    "primary": "#24389c",
+                    "inverse-surface": "#2f3037",
+                    "error-container": "#ffdad6",
+                    "on-error-container": "#93000a",
+                    "primary-fixed": "#dee0ff",
+                    "outline": "#757684",
+                    "surface-variant": "#e3e1ea",
+                    "on-primary-fixed-variant": "#293ca0",
+                    "on-error": "#ffffff",
+                    "inverse-primary": "#bac3ff",
+                    "on-background": "#1a1b22",
+                    "surface-container-low": "#f4f2fc",
+                    "on-secondary-container": "#57657a",
+                    "surface-container-high": "#e9e7f0",
+                    "on-primary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "on-primary-container": "#cacfff",
+                    "surface-container": "#efedf6",
+                    "surface-container-lowest": "#ffffff",
+                    "outline-variant": "#c5c5d4",
+                    "tertiary": "#6c3400",
+                    "primary-fixed-dim": "#bac3ff",
+                    "on-tertiary-fixed": "#301400",
+                    "primary-container": "#3f51b5",
+                    "secondary-fixed": "#d5e3fc",
+                    "surface-tint": "#4355b9",
+                    "on-surface-variant": "#454652",
+                    "on-secondary-fixed": "#0d1c2e",
+                    "on-primary-fixed": "#00105c",
+                    "surface-bright": "#fbf8ff",
+                    "surface-container-highest": "#e3e1ea",
+                    "on-tertiary-fixed-variant": "#713700",
+                    "surface-dim": "#dbd9e2",
+                    "secondary-fixed-dim": "#b9c7df",
+                    "on-surface": "#1a1b22",
+                    "tertiary-container": "#8f4700",
+                    "secondary": "#515f74",
+                    "on-tertiary-container": "#ffc7a2"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(251, 248, 255, 0.8);
+            backdrop-filter: blur(20px);
+        }
+        .editorial-shadow {
+            box-shadow: 0 20px 40px -15px rgba(26, 27, 34, 0.06);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #c5c5d4;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #757684;
+        }
+        /* Smooth dropdown animation */
+        .country-dropdown {
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+        .country-dropdown.hidden {
+            display: none;
+        }
+        /* Google button styling */
+        .google-btn {
+            transition: all 0.2s ease;
+        }
+        .google-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface antialiased min-h-screen flex flex-col">
+<header class="fixed top-0 w-full z-50 glass-panel shadow-sm px-8 py-4 flex justify-center items-center">
+<h1 class="text-2xl font-bold tracking-tighter text-primary">PIO E-market</h1>
+</header>
+<main class="flex-grow flex items-center justify-center pt-24 pb-12 px-4 md:px-6">
+<div class="grid lg:grid-cols-2 max-w-5xl w-full gap-0 overflow-hidden bg-surface-container-low rounded-xl editorial-shadow">
+<!-- Left Side: Editorial Content -->
+<div class="hidden lg:block relative overflow-hidden group">
+<img alt="Minimalist fashion studio with high-end designer clothing on a sleek chrome rack and soft architectural lighting" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDkAsdWXK0jdQ_JYHtH928Eq56Yh5Gw3VMoXcLcHdeZfUx-ZX0mQ_3UAQ3O6tvNMmekjY2DSmH0gjZaErEjJztQLPKXVR0wYZ7OS0yvHr-N9kw5h7JyUR2VPq5uIUThmrXgodrAGt9Xm8IJZCh9BlZXctAH-i8iPnuKQanSkBpxfMvYWaR05g_ItG2-6rUNEWvyeYEHl_pj-LCjBgROU0rkg7z0XCSVgqdMJsknibooCvKZ1WstSrOeTfDc1kfeMS_MNCfC5DG7ZTA"/>
+<div class="absolute inset-0 bg-primary/20 backdrop-multiply"></div>
+<div class="absolute bottom-12 left-12 right-12 z-10">
+<span class="inline-block px-4 py-1 mb-4 text-xs font-semibold tracking-widest text-on-primary bg-primary rounded-full uppercase text-[10px]">The Atelier</span>
+<h2 class="text-4xl font-extrabold text-white leading-tight tracking-tighter mb-4">Curating the future of <br/>personal style.</h2>
+<p class="text-white/80 text-lg leading-relaxed max-w-xs">Join our exclusive community and access curated collections from independent artisans.</p>
+</div>
+</div>
+<!-- Right Side: Account Creation Form -->
+<div class="bg-surface-container-lowest p-8 md:p-12 lg:p-14 flex flex-col justify-center">
+<div class="mb-8">
+<h3 class="text-3xl font-bold tracking-tight text-on-surface mb-2">Create Account</h3>
+<p class="text-on-surface-variant">Step into the digital atelier and begin your journey.</p>
+</div>
+
+<form class="space-y-5" id="registrationForm">
+<!-- Full Name -->
+<div class="space-y-1.5">
+<label class="block text-sm font-medium text-on-surface-variant px-1" for="name">Full Name</label>
+<div class="relative">
+<input class="w-full px-4 py-3 bg-surface-container-low border-0 border-b-2 border-outline-variant/20 focus:ring-0 focus:border-primary transition-all text-on-surface placeholder:text-outline-variant rounded-lg" id="name" name="fullName" placeholder="Elias Thorne" required="" type="text"/>
+</div>
+</div>
+<!-- Email Address -->
+<div class="space-y-1.5">
+<label class="block text-sm font-medium text-on-surface-variant px-1" for="email">Email Address</label>
+<div class="relative">
+<input class="w-full px-4 py-3 bg-surface-container-low border-0 border-b-2 border-outline-variant/20 focus:ring-0 focus:border-primary transition-all text-on-surface placeholder:text-outline-variant rounded-lg" id="email" name="email" placeholder="elias@editorial.com" required="" type="email"/>
+</div>
+</div>
+<!-- Phone Number with Country Code Picker -->
+<div class="space-y-1.5">
+<label class="block text-sm font-medium text-on-surface-variant px-1" for="phone">Phone Number</label>
+<div class="flex gap-2" id="phoneGroup">
+<div class="relative w-40 flex-shrink-0">
+<button class="w-full flex items-center justify-between px-3 py-3 bg-surface-container-low border-0 border-b-2 border-outline-variant/20 focus:border-primary transition-all text-on-surface text-sm rounded-lg cursor-pointer" id="country-picker-button" type="button">
+<span class="flex items-center gap-2">
+<span id="selectedCountryFlag">🇺🇸</span>
+<span id="selectedCountryCode">+1</span>
+</span>
+<span class="material-symbols-outlined text-outline-variant text-base">expand_more</span>
+</button>
+<div class="absolute left-0 top-full mt-1 w-64 bg-surface-container-lowest border border-outline-variant/20 rounded-xl shadow-2xl z-50 overflow-hidden country-dropdown hidden" id="countryDropdown">
+<div class="p-2 border-b border-outline-variant/10">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline-variant text-sm">search</span>
+<input class="w-full pl-9 pr-4 py-2 bg-surface-container-low border-0 text-sm rounded-lg focus:ring-1 focus:ring-primary placeholder:text-outline-variant/60" placeholder="Search countries..." type="text" id="countrySearchInput"/>
+</div>
+</div>
+<div class="max-h-60 overflow-y-auto py-1 custom-scrollbar" id="countryListContainer"></div>
+</div>
+</div>
+<div class="relative flex-grow">
+<input class="w-full px-4 py-3 bg-surface-container-low border-0 border-b-2 border-outline-variant/20 focus:ring-0 focus:border-primary transition-all text-on-surface placeholder:text-outline-variant rounded-lg" id="phone" name="phone" placeholder="(555) 000-0000" type="tel"/>
+</div>
+</div>
+</div>
+<!-- Password -->
+<div class="space-y-1.5">
+<label class="block text-sm font-medium text-on-surface-variant px-1" for="password">Password</label>
+<div class="relative">
+<input class="w-full px-4 py-3 bg-surface-container-low border-0 border-b-2 border-outline-variant/20 focus:ring-0 focus:border-primary transition-all text-on-surface placeholder:text-outline-variant rounded-lg" id="password" name="password" placeholder="••••••••" required="" type="password"/>
+</div>
+<p class="text-xs text-outline-variant mt-1 px-1">Must be at least 6 characters</p>
+</div>
+<!-- Marketing Opt-in -->
+<div class="flex items-start space-x-3 pt-2">
+<input class="mt-1 w-4 h-4 text-primary bg-surface-container-low border-outline-variant/20 rounded focus:ring-primary focus:ring-offset-0 transition-colors" id="newsletter" type="checkbox"/>
+<label class="text-xs sm:text-sm text-on-surface-variant" for="newsletter">I wish to receive curated updates and member stories from The Editorial.</label>
+</div>
+<!-- Action Button -->
+<div class="pt-4">
+<button class="w-full py-4 px-6 bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold text-lg rounded-xl shadow-lg hover:shadow-indigo-900/20 active:scale-[0.98] transition-all duration-200" type="submit">
+    Create Account
+</button>
+</div>
+</form>
+
+<!-- Divider -->
+<div class="relative my-6">
+<div aria-hidden="true" class="absolute inset-0 flex items-center">
+<div class="w-full border-t border-outline-variant/20"></div>
+</div>
+<div class="relative flex justify-center text-[11px]">
+<span class="px-4 bg-surface-container-lowest text-outline font-bold uppercase tracking-widest">Or continue with</span>
+</div>
+</div>
+
+<!-- Google Sign-In Button -->
+<button class="google-btn w-full flex items-center justify-center gap-3 py-3 px-4 bg-white hover:bg-gray-50 rounded-lg transition-all duration-200 border border-outline-variant/30 shadow-sm" id="googleSignInBtn">
+<svg class="w-5 h-5" viewbox="0 0 24 24">
+<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
+<path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
+<path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"></path>
+<path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path>
+</svg>
+<span class="text-sm font-semibold text-gray-700">Sign up with Google</span>
+</button>
+
+<!-- Message Area -->
+<div id="messageArea" class="mt-4 text-center text-sm hidden"></div>
+
+<div class="mt-6 text-center">
+<p class="text-on-surface-variant text-sm">
+    Already have an account? 
+    <a class="text-primary font-bold hover:underline underline-offset-4 transition-all ml-1" href="/login">Log In</a>
+</p>
+</div>
+
+<div class="mt-6 pt-6 border-t border-outline-variant/10 flex items-center justify-between">
+<span class="text-[10px] uppercase tracking-widest text-outline-variant font-bold">Secure Registration</span>
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-outline-variant text-lg">lock</span>
+<span class="material-symbols-outlined text-outline-variant text-lg">verified_user</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+
+<footer class="w-full py-8 px-8 bg-surface-container-low mt-auto">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="text-lg font-bold text-primary">PIO E-market</div>
+<div class="flex flex-wrap justify-center gap-6 md:gap-8">
+<a class="text-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="text-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Terms of Service</a>
+<a class="text-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Help Center</a>
+</div>
+<div class="text-xs text-outline-variant">© 2024 The PIO E-market Framework. All rights reserved.</div>
+</div>
+</footer>
+
+<script>
+    // ============================================
+    // COUNTRY CODE SELECTOR
+    // ============================================
+    const countriesList = [
+        { flag: "🇺🇸", name: "United States", code: "+1", dialCode: "1" },
+        { flag: "🇳🇬", name: "Nigeria", code: "+234", dialCode: "234" },
+        { flag: "🇬🇧", name: "United Kingdom", code: "+44", dialCode: "44" },
+        { flag: "🇫🇷", name: "France", code: "+33", dialCode: "33" },
+        { flag: "🇩🇪", name: "Germany", code: "+49", dialCode: "49" },
+        { flag: "🇯🇵", name: "Japan", code: "+81", dialCode: "81" },
+        { flag: "🇦🇺", name: "Australia", code: "+61", dialCode: "61" },
+        { flag: "🇨🇦", name: "Canada", code: "+1", dialCode: "1" },
+        { flag: "🇮🇳", name: "India", code: "+91", dialCode: "91" },
+        { flag: "🇮🇹", name: "Italy", code: "+39", dialCode: "39" },
+        { flag: "🇪🇸", name: "Spain", code: "+34", dialCode: "34" },
+        { flag: "🇧🇷", name: "Brazil", code: "+55", dialCode: "55" },
+        { flag: "🇲🇽", name: "Mexico", code: "+52", dialCode: "52" },
+        { flag: "🇿🇦", name: "South Africa", code: "+27", dialCode: "27" },
+        { flag: "🇰🇷", name: "South Korea", code: "+82", dialCode: "82" },
+        { flag: "🇷🇺", name: "Russia", code: "+7", dialCode: "7" },
+        { flag: "🇹🇷", name: "Turkey", code: "+90", dialCode: "90" },
+        { flag: "🇳🇱", name: "Netherlands", code: "+31", dialCode: "31" },
+        { flag: "🇸🇪", name: "Sweden", code: "+46", dialCode: "46" },
+        { flag: "🇨🇭", name: "Switzerland", code: "+41", dialCode: "41" }
+    ];
+
+    let currentSelectedCountry = countriesList[0];
+
+    function renderCountryList(filterText = "") {
+        const container = document.getElementById("countryListContainer");
+        if (!container) return;
+        
+        const filtered = countriesList.filter(country => 
+            country.name.toLowerCase().includes(filterText.toLowerCase()) || 
+            country.code.includes(filterText)
+        );
+        
+        container.innerHTML = "";
+        if (filtered.length === 0) {
+            container.innerHTML = `<div class="px-4 py-3 text-sm text-outline text-center">No countries found</div>`;
+            return;
+        }
+        
+        filtered.forEach(country => {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "w-full flex items-center gap-3 px-4 py-2 hover:bg-surface-container-low transition-colors text-sm text-left";
+            btn.innerHTML = `
+                <span>${country.flag}</span>
+                <span class="flex-grow">${country.name}</span>
+                <span class="text-on-surface-variant text-xs">${country.code}</span>
+            `;
+            btn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                selectCountry(country);
+                closeDropdown();
+            });
+            container.appendChild(btn);
+        });
+    }
+
+    function selectCountry(country) {
+        currentSelectedCountry = country;
+        document.getElementById("selectedCountryFlag").innerText = country.flag;
+        document.getElementById("selectedCountryCode").innerText = country.code;
+    }
+
+    function openDropdown() {
+        const dropdown = document.getElementById("countryDropdown");
+        if (!dropdown) return;
+        dropdown.classList.remove("hidden");
+        renderCountryList("");
+        const searchInput = document.getElementById("countrySearchInput");
+        if (searchInput) {
+            searchInput.value = "";
+            searchInput.focus();
+        }
+        setTimeout(() => {
+            document.addEventListener("click", outsideClickHandler);
+        }, 10);
+    }
+    
+    function closeDropdown() {
+        const dropdown = document.getElementById("countryDropdown");
+        if (dropdown && !dropdown.classList.contains("hidden")) {
+            dropdown.classList.add("hidden");
+        }
+        document.removeEventListener("click", outsideClickHandler);
+    }
+    
+    function toggleDropdown() {
+        const dropdown = document.getElementById("countryDropdown");
+        if (!dropdown) return;
+        if (dropdown.classList.contains("hidden")) {
+            openDropdown();
+        } else {
+            closeDropdown();
+        }
+    }
+    
+    function outsideClickHandler(event) {
+        const group = document.getElementById("phoneGroup");
+        const dropdown = document.getElementById("countryDropdown");
+        const pickerButton = document.getElementById("country-picker-button");
+        if (group && dropdown && !group.contains(event.target) && !dropdown.contains(event.target) && event.target !== pickerButton) {
+            closeDropdown();
+        }
+    }
+    
+    document.getElementById("country-picker-button")?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleDropdown();
+    });
+    
+    document.getElementById("countrySearchInput")?.addEventListener("input", (e) => {
+        renderCountryList(e.target.value);
+    });
+    
+    document.getElementById("countrySearchInput")?.addEventListener("click", (e) => {
+        e.stopPropagation();
+    });
+    
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeDropdown();
+    });
+    
+    document.getElementById("countryDropdown")?.addEventListener("click", (e) => {
+        e.stopPropagation();
+    });
+    
+    selectCountry(countriesList[0]);
+
+    // ============================================
+    // MESSAGE DISPLAY FUNCTION
+    // ============================================
+    function showMessage(message, isError = false) {
+        const messageArea = document.getElementById("messageArea");
+        messageArea.textContent = message;
+        messageArea.className = `mt-4 text-center text-sm rounded-lg p-3 ${isError ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`;
+        messageArea.classList.remove("hidden");
+        
+        setTimeout(() => {
+            messageArea.classList.add("hidden");
+        }, 5000);
+    }
+
+    // ============================================
+    // FORM SUBMIT HANDLER
+    // ============================================
+    const registrationForm = document.getElementById("registrationForm");
+    if (registrationForm) {
+        registrationForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            
+            const fullName = document.getElementById("name").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const phoneNumber = document.getElementById("phone").value.trim();
+            const password = document.getElementById("password").value;
+            const newsletter = document.getElementById("newsletter").checked;
+            const countryCode = currentSelectedCountry.code;
+            
+            if (!fullName) {
+                showMessage("Please enter your full name.", true);
+                return;
+            }
+            if (!email || !email.includes("@") || !email.includes(".")) {
+                showMessage("Please enter a valid email address.", true);
+                return;
+            }
+            if (!phoneNumber) {
+                showMessage("Please enter your phone number.", true);
+                return;
+            }
+            if (!password || password.length < 6) {
+                showMessage("Password must be at least 6 characters.", true);
+                return;
+            }
+            
+            const submitBtn = registrationForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Creating account...";
+            
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        fullName: fullName,
+                        email: email,
+                        phone: phoneNumber,
+                        countryCode: countryCode,
+                        password: password,
+                        newsletter: newsletter
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage(`✅ ${result.message} Redirecting to login...`, false);
+                    setTimeout(() => {
+                        window.location.href = '/login';
+                    }, 2000);
+                } else {
+                    showMessage(`❌ ${result.message}`, true);
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('❌ Network error. Please make sure your server is running.', true);
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        });
+    }
+
+    // ============================================
+    // GOOGLE SIGN-IN FOR ACCOUNT CREATION
+    // ============================================
+    const GOOGLE_CLIENT_ID = "1080629184243-6mapejb28m47qk9clvphqjcqnr0p5ro3.apps.googleusercontent.com";
+    let tokenClient = null;
+
+    function initializeGoogleSignIn() {
+        if (typeof google !== 'undefined' && google.accounts) {
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: GOOGLE_CLIENT_ID,
+                scope: 'email profile openid',
+                callback: async (tokenResponse) => {
+                    if (tokenResponse.access_token) {
+                        await createAccountWithGoogle(tokenResponse.access_token);
+                    } else if (tokenResponse.error) {
+                        console.error("Google Auth Error:", tokenResponse.error);
+                        showMessage("Google sign-in failed. Please try again.", true);
+                    }
+                },
+            });
+            return tokenClient;
+        }
+        return null;
+    }
+
+    async function createAccountWithGoogle(accessToken) {
+        try {
+            const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                headers: { Authorization: `Bearer ${accessToken}` }
+            });
+            const userData = await response.json();
+            
+            if (userData && !userData.error) {
+                // Check if user already exists
+                const checkResponse = await fetch(`/api/check-email/${encodeURIComponent(userData.email)}`);
+                const checkResult = await checkResponse.json();
+                
+                if (checkResult.exists) {
+                    showMessage(`Account already exists with ${userData.email}. Please login instead.`, true);
+                    setTimeout(() => {
+                        window.location.href = '/login';
+                    }, 2000);
+                    return;
+                }
+                
+                // Auto-fill the form with Google data
+                document.getElementById("name").value = userData.name || "";
+                document.getElementById("email").value = userData.email;
+                
+                // Generate a random secure password for Google users
+                const generatedPassword = Math.random().toString(36).slice(-12) + "Aa1!";
+                document.getElementById("password").value = generatedPassword;
+                
+                // Show message and auto-submit
+                showMessage(`✅ Google account verified! Creating your account...`, false);
+                
+                // Auto-submit the form after 1 second
+                setTimeout(() => {
+                    registrationForm.dispatchEvent(new Event("submit"));
+                }, 1000);
+            } else {
+                showMessage("Could not retrieve Google profile. Please try manual registration.", true);
+            }
+        } catch (err) {
+            console.error("Google userinfo error:", err);
+            showMessage("Network error while fetching Google profile.", true);
+        }
+    }
+
+    function onGoogleLibraryLoad() {
+        tokenClient = initializeGoogleSignIn();
+        console.log("Google Identity Services ready");
+    }
+
+    const googleBtn = document.getElementById("googleSignInBtn");
+    if (googleBtn) {
+        googleBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            if (typeof google === 'undefined' || !google.accounts) {
+                showMessage("Google SDK is still loading. Please try again in a moment.", true);
+                return;
+            }
+            if (!tokenClient) {
+                tokenClient = initializeGoogleSignIn();
+            }
+            if (tokenClient) {
+                tokenClient.requestAccessToken({ prompt: 'consent' });
+            } else {
+                showMessage("Google sign-in is not configured properly.", true);
+            }
+        });
+    }
+
+    window.onGoogleLibraryLoad = onGoogleLibraryLoad;
+    if (typeof google !== 'undefined' && google.accounts) {
+        onGoogleLibraryLoad();
+    } else {
+        window.addEventListener('load', () => {
+            if (typeof google !== 'undefined' && google.accounts) onGoogleLibraryLoad();
+        });
+    }
+</script>
+</body>
+</html>

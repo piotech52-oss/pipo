@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Admin Dashboard | PIO Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        body { background: #f0f2f5; }
+        .sidebar { background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%); min-height: 100vh; }
+        .nav-item { transition: all 0.2s; cursor: pointer; }
+        .nav-item:hover { background: rgba(255,255,255,0.1); }
+        .nav-item.active { background: rgba(79, 107, 255, 0.2); border-left: 3px solid #4f6bff; }
+        .loader {
+            border: 3px solid #e8e7f0;
+            border-top: 3px solid #4f6bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .chart-container {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                position: fixed;
+                z-index: 1000;
+                width: 280px;
+            }
+            .sidebar.open { transform: translateX(0); }
+            main { margin-left: 0 !important; }
+            .menu-toggle { display: block; }
+        }
+        @media (min-width: 1025px) {
+            .menu-toggle { display: none; }
+            main { margin-left: 256px; }
+        }
+        .menu-toggle {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 1001;
+            background: #1a1a2e;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px;
+            cursor: pointer;
+        }
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+        .overlay.active { display: block; }
+    </style>
+</head>
+<body>
+    <button class="menu-toggle" onclick="toggleSidebar()">
+        <span class="material-symbols-outlined">menu</span>
+    </button>
+    <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+    <div class="flex">
+        <aside class="sidebar w-64 min-h-screen text-white fixed" id="sidebar">
+            <div class="p-6 border-b border-white/10">
+                <div class="flex justify-between items-center">
+                    <h1 class="text-xl font-bold">PIO Admin</h1>
+                    <button class="lg:hidden text-white/70 hover:text-white" onclick="closeSidebar()">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+                <p class="text-xs text-white/50 mt-1">E-market Dashboard</p>
+            </div>
+            <nav class="mt-6">
+                <a href="/admindashboard.html" class="nav-item active flex items-center gap-3 px-6 py-3 text-white/80 hover:text-white">
+                    <span class="material-symbols-outlined">dashboard</span><span>Dashboard</span>
+                </a>
+                <a href="/adminproducts.html" class="nav-item flex items-center gap-3 px-6 py-3 text-white/80 hover:text-white">
+                    <span class="material-symbols-outlined">inventory</span><span>Products</span>
+                </a>
+                <a href="/adminorders.html" class="nav-item flex items-center gap-3 px-6 py-3 text-white/80 hover:text-white">
+                    <span class="material-symbols-outlined">shopping_bag</span><span>Orders</span>
+                </a>
+                <a href="/adminusers.html" class="nav-item flex items-center gap-3 px-6 py-3 text-white/80 hover:text-white">
+                    <span class="material-symbols-outlined">people</span><span>Users</span>
+                </a>
+                <div class="mt-10 pt-6 border-t border-white/10">
+                    <a href="#" class="nav-item flex items-center gap-3 px-6 py-3 text-white/80 hover:text-white" id="logoutBtn">
+                        <span class="material-symbols-outlined">logout</span><span>Logout</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="flex-1 p-4 sm:p-6 lg:p-8">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
+                <h1 class="text-2xl sm:text-3xl font-bold text-[#1a1a2e]">Analytics Dashboard</h1>
+                <div class="flex items-center gap-4">
+                    <span class="text-sm text-gray-500" id="adminName">Admin</span>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+                <div class="bg-white rounded-xl p-4 sm:p-6 shadow-sm stat-card">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-gray-500 text-xs sm:text-sm">Total Orders</p>
+                            <p class="text-xl sm:text-3xl font-bold text-[#1a1a2e] mt-1" id="totalOrders">0</p>
+                        </div>
+                        <div class="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                            <span class="material-symbols-outlined text-blue-600 text-xl sm:text-2xl">shopping_bag</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl p-4 sm:p-6 shadow-sm stat-card">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-gray-500 text-xs sm:text-sm">Total Revenue</p>
+                            <p class="text-xl sm:text-3xl font-bold text-[#1a1a2e] mt-1" id="totalRevenue">₦0</p>
+                        </div>
+                        <div class="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-full flex items-center justify-center">
+                            <span class="material-symbols-outlined text-green-600 text-xl sm:text-2xl">payments</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl p-4 sm:p-6 shadow-sm stat-card">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-gray-500 text-xs sm:text-sm">Total Products</p>
+                            <p class="text-xl sm:text-3xl font-bold text-[#1a1a2e] mt-1" id="totalProducts">0</p>
+                        </div>
+                        <div class="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                            <span class="material-symbols-outlined text-purple-600 text-xl sm:text-2xl">inventory</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl p-4 sm:p-6 shadow-sm stat-card">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-gray-500 text-xs sm:text-sm">Total Customers</p>
+                            <p class="text-xl sm:text-3xl font-bold text-[#1a1a2e] mt-1" id="totalUsers">0</p>
+                        </div>
+                        <div class="w-10 h-10 sm:w-12 sm:h-12 bg-pink-100 rounded-full flex items-center justify-center">
+                            <span class="material-symbols-outlined text-pink-600 text-xl sm:text-2xl">people</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row 1 -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+                <div class="chart-container">
+                    <h2 class="text-base sm:text-lg font-bold text-[#1a1a2e] mb-4">📊 Monthly Sales</h2>
+                    <canvas id="monthlySalesChart" height="250"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h2 class="text-base sm:text-lg font-bold text-[#1a1a2e] mb-4">🥧 Orders by Status</h2>
+                    <canvas id="statusChart" height="250"></canvas>
+                </div>
+            </div>
+
+            <!-- Charts Row 2 -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                <div class="chart-container">
+                    <h2 class="text-base sm:text-lg font-bold text-[#1a1a2e] mb-4">📈 Last 7 Days Sales</h2>
+                    <canvas id="weeklySalesChart" height="250"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h2 class="text-base sm:text-lg font-bold text-[#1a1a2e] mb-4">🏆 Top Selling Products</h2>
+                    <div id="topProductsTable" class="overflow-x-auto max-h-64">
+                        <div class="loader mx-auto my-8"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let monthlySalesChart, statusChart, weeklySalesChart;
+
+        function formatNaira(amount) {
+            return new Intl.NumberFormat('en-NG', {
+                style: 'currency',
+                currency: 'NGN',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(amount);
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        }
+
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+        }
+
+        async function checkAdminLogin() {
+            try {
+                const response = await fetch('/api/admin/check');
+                const result = await response.json();
+                if (!result.success) {
+                    window.location.href = '/adminlogin.html';
+                } else {
+                    document.getElementById('adminName').textContent = result.admin.full_name;
+                    loadDashboardStats();
+                    loadMonthlySalesChart();
+                    loadStatusChart();
+                    loadWeeklySalesChart();
+                    loadTopProducts();
+                }
+            } catch (error) {
+                window.location.href = '/adminlogin.html';
+            }
+        }
+
+        async function loadDashboardStats() {
+            try {
+                const ordersRes = await fetch('/api/admin/stats/orders');
+                const ordersData = await ordersRes.json();
+                document.getElementById('totalOrders').textContent = ordersData.count || 0;
+                document.getElementById('totalRevenue').textContent = formatNaira(ordersData.revenue || 0);
+                
+                const productsRes = await fetch('/api/admin/stats/products');
+                const productsData = await productsRes.json();
+                document.getElementById('totalProducts').textContent = productsData.count || 0;
+                
+                const usersRes = await fetch('/api/admin/stats/users');
+                const usersData = await usersRes.json();
+                document.getElementById('totalUsers').textContent = usersData.count || 0;
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        async function loadMonthlySalesChart() {
+            try {
+                const response = await fetch('/api/admin/analytics/monthly-sales');
+                const result = await response.json();
+                
+                if (result.success && result.data && result.data.length > 0) {
+                    const months = result.data.map(item => item.month);
+                    const sales = result.data.map(item => parseFloat(item.total_sales));
+                    const orders = result.data.map(item => parseInt(item.order_count));
+                    
+                    if (monthlySalesChart) monthlySalesChart.destroy();
+                    
+                    const ctx = document.getElementById('monthlySalesChart').getContext('2d');
+                    monthlySalesChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: months,
+                            datasets: [
+                                {
+                                    label: 'Sales (₦)',
+                                    data: sales,
+                                    borderColor: '#4f6bff',
+                                    backgroundColor: 'rgba(79, 107, 255, 0.1)',
+                                    tension: 0.4,
+                                    fill: true,
+                                    yAxisID: 'y'
+                                },
+                                {
+                                    label: 'Orders',
+                                    data: orders,
+                                    borderColor: '#ff8a5c',
+                                    backgroundColor: 'rgba(255, 138, 92, 0.1)',
+                                    tension: 0.4,
+                                    fill: true,
+                                    yAxisID: 'y1'
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            interaction: { mode: 'index', intersect: false },
+                            plugins: { legend: { position: 'top' } },
+                            scales: {
+                                y: { 
+                                    title: { display: true, text: 'Sales (₦)' },
+                                    ticks: { callback: (value) => formatNaira(value) }
+                                },
+                                y1: { 
+                                    position: 'right', 
+                                    title: { display: true, text: 'Orders' }, 
+                                    grid: { drawOnChartArea: false } 
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    console.log('No monthly sales data');
+                }
+            } catch (error) {
+                console.error('Error loading monthly sales:', error);
+            }
+        }
+
+        async function loadStatusChart() {
+            try {
+                const response = await fetch('/api/admin/analytics/sales-by-status');
+                const result = await response.json();
+                
+                if (result.success && result.data && result.data.length > 0) {
+                    const statuses = result.data.map(item => item.status);
+                    const counts = result.data.map(item => parseInt(item.count));
+                    const colors = {
+                        'pending': '#ff9800',
+                        'processing': '#2196f3',
+                        'shipped': '#9c27b0',
+                        'delivered': '#4caf50',
+                        'cancelled': '#f44336'
+                    };
+                    const backgroundColors = statuses.map(s => colors[s] || '#757684');
+                    
+                    if (statusChart) statusChart.destroy();
+                    
+                    const ctx = document.getElementById('statusChart').getContext('2d');
+                    statusChart = new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: statuses,
+                            datasets: [{
+                                data: counts,
+                                backgroundColor: backgroundColors,
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: { position: 'bottom' },
+                                tooltip: { callbacks: { label: (tooltipItem) => `${tooltipItem.label}: ${tooltipItem.raw} orders` } }
+                            }
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading status chart:', error);
+            }
+        }
+
+        async function loadWeeklySalesChart() {
+            try {
+                const response = await fetch('/api/admin/analytics/weekly-sales');
+                const result = await response.json();
+                
+                if (result.success && result.data && result.data.length > 0) {
+                    const dates = result.data.map(item => item.date);
+                    const sales = result.data.map(item => parseFloat(item.total_sales));
+                    
+                    if (weeklySalesChart) weeklySalesChart.destroy();
+                    
+                    const ctx = document.getElementById('weeklySalesChart').getContext('2d');
+                    weeklySalesChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: dates,
+                            datasets: [{
+                                label: 'Sales (₦)',
+                                data: sales,
+                                backgroundColor: '#4f6bff',
+                                borderRadius: 8
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: { legend: { position: 'top' } },
+                            scales: {
+                                y: { 
+                                    ticks: { callback: (value) => formatNaira(value) }
+                                }
+                            }
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading weekly sales:', error);
+            }
+        }
+
+        async function loadTopProducts() {
+            try {
+                const response = await fetch('/api/admin/analytics/top-products');
+                const result = await response.json();
+                const container = document.getElementById('topProductsTable');
+                
+                if (result.success && result.products && result.products.length > 0) {
+                    container.innerHTML = `
+                        <table class="w-full text-xs sm:text-sm">
+                            <thead class="border-b border-gray-200">
+                                <tr class="text-left text-gray-500">
+                                    <th class="pb-2">Product</th>
+                                    <th class="pb-2">Sold</th>
+                                    <th class="pb-2">Revenue</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${result.products.map(p => `
+                                    <tr class="border-b border-gray-100">
+                                        <td class="py-2 break-words max-w-[150px]">${escapeHtml(p.name)}</td>
+                                        <td class="py-2">${p.total_sold}</td>
+                                        <td class="py-2 font-semibold">${formatNaira(parseFloat(p.total_revenue))}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    container.innerHTML = '<p class="text-center text-gray-500 py-8">No sales data yet</p>';
+                }
+            } catch (error) {
+                console.error('Error loading top products:', error);
+                document.getElementById('topProductsTable').innerHTML = '<p class="text-center text-red-500 py-8">Failed to load data</p>';
+            }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        document.getElementById('logoutBtn')?.addEventListener('click', async (e) => {
+            e.preventDefault();
+            await fetch('/api/admin/logout', { method: 'POST' });
+            window.location.href = '/adminlogin.html';
+        });
+
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                if (window.innerWidth <= 1024) closeSidebar();
+            });
+        });
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 1024) closeSidebar();
+        });
+
+        checkAdminLogin();
+    </script>
+</body>
+</html>

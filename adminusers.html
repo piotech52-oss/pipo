@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Manage Users | PIO Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <style>
+        * { 
+            font-family: 'Inter', sans-serif; 
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body { 
+            background: #f0f2f5; 
+            overflow-x: hidden;
+            width: 100%;
+        }
+        .sidebar { 
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%); 
+            min-height: 100vh;
+            transition: transform 0.3s ease-in-out;
+        }
+        .nav-item { 
+            transition: all 0.2s; 
+            cursor: pointer; 
+        }
+        .nav-item:hover { 
+            background: rgba(255,255,255,0.1); 
+        }
+        .nav-item.active { 
+            background: rgba(79, 107, 255, 0.2); 
+            border-left: 3px solid #4f6bff; 
+        }
+        .loader {
+            border: 3px solid #e8e7f0;
+            border-top: 3px solid #4f6bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .role-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .role-admin { background: #ffebee; color: #c62828; }
+        .role-customer { background: #e8f5e9; color: #2e7d32; }
+        .role-vendor { background: #e3f2fd; color: #1565c0; }
+        
+        /* Mobile Responsive Styles */
+        @media (max-width: 1024px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                transform: translateX(-100%);
+                z-index: 1000;
+                width: 280px;
+                height: 100%;
+                overflow-y: auto;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .menu-toggle {
+                display: block !important;
+            }
+            .main-content {
+                margin-left: 0 !important;
+                width: 100%;
+            }
+        }
+        
+        @media (min-width: 1025px) {
+            .menu-toggle {
+                display: none !important;
+            }
+            .main-content {
+                margin-left: 256px;
+                width: calc(100% - 256px);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .table-responsive {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            .users-table {
+                min-width: 700px;
+            }
+            .search-container {
+                width: 100%;
+                margin-bottom: 12px;
+            }
+            .search-input {
+                width: 100%;
+            }
+            .header-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .role-badge {
+                font-size: 10px;
+                padding: 3px 8px;
+            }
+            .users-table th, .users-table td {
+                padding: 10px 8px;
+            }
+        }
+        
+        .menu-toggle {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 1001;
+            background: #1a1a2e;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px;
+            cursor: pointer;
+        }
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+        .overlay.active {
+            display: block;
+        }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #4caf50;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            z-index: 2000;
+            animation: fadeOut 3s ease forwards;
+        }
+        .toast-error {
+            background: #f44336;
+        }
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            70% { opacity: 1; }
+            100% { opacity: 0; visibility: hidden; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Menu Toggle Button -->
+    <button class="menu-toggle" onclick="toggleSidebar()">
+        <span class="material-symbols-outlined">menu</span>
+    </button>
+    
+    <!-- Overlay for mobile -->
+    <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+    <div class="flex" style="min-height: 100vh;">
+        <!-- Sidebar -->
+        <aside class="sidebar w-64 text-white" id="sidebar">
+            <div class="p-6 border-b border-white/10">
+                <div class="flex justify-between items-center">
+                    <h1 class="text-xl font-bold">PIO Admin</h1>
+                    <button class="lg:hidden text-white/70 hover:text-white" onclick="closeSidebar()">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+                <p class="text-xs text-white/50 mt-1">E-market Dashboard</p>
+            </div>
+            <nav class="mt-6">
+                <a href="/admindashboard.html" class="nav-item flex items-center gap-3 px-6 py-3 text-white/80 hover:text-white">
+                    <span class="material-symbols-outlined">dashboard</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/adminproducts.html" class="nav-item flex items-center gap-3 px-6 py-3 text-white/80 hover:text-white">
+                    <span class="material-symbols-outlined">inventory</span>
+                    <span>Products</span>
+                </a>
+                <a href="/adminorders.html" class="nav-item flex items-center gap-3 px-6 py-3 text-white/80 hover:text-white">
+                    <span class="material-symbols-outlined">shopping_bag</span>
+                    <span>Orders</span>
+                </a>
+                <a href="/adminusers.html" class="nav-item active flex items-center gap-3 px-6 py-3 text-white/80 hover:text-white">
+                    <span class="material-symbols-outlined">people</span>
+                    <span>Users</span>
+                </a>
+                <div class="mt-10 pt-6 border-t border-white/10">
+                    <a href="#" class="nav-item flex items-center gap-3 px-6 py-3 text-white/80 hover:text-white" id="logoutBtn">
+                        <span class="material-symbols-outlined">logout</span>
+                        <span>Logout</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content flex-1 p-3 sm:p-4 md:p-6 lg:p-8" style="transition: all 0.3s ease;">
+            <div class="header-section flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6 md:mb-8">
+                <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-[#1a1a2e]">Manage Users</h1>
+                <div class="search-container w-full sm:w-auto">
+                    <input type="text" id="searchUsers" placeholder="Search users by name or email..." 
+                           class="search-input w-full sm:w-64 px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4f6bff] focus:border-transparent text-sm sm:text-base">
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm p-3 sm:p-4 md:p-6">
+                <div class="table-responsive">
+                    <div id="usersTable">
+                        <div class="loader mx-auto my-8"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let allUsers = [];
+
+        function showToast(message, isError = false) {
+            const toast = document.createElement('div');
+            toast.className = 'toast' + (isError ? ' toast-error' : '');
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+            document.body.style.overflow = sidebar.classList.contains('open') ? 'hidden' : '';
+        }
+
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        async function checkAdminLogin() {
+            try {
+                const response = await fetch('/api/admin/check');
+                const result = await response.json();
+                if (!result.success) {
+                    window.location.href = '/adminlogin.html';
+                } else {
+                    loadUsers();
+                }
+            } catch (error) {
+                console.error('Auth error:', error);
+                window.location.href = '/adminlogin.html';
+            }
+        }
+
+        async function loadUsers() {
+            try {
+                const response = await fetch('/api/admin/users/all');
+                const result = await response.json();
+                const container = document.getElementById('usersTable');
+                
+                if (result.success && result.users && result.users.length > 0) {
+                    allUsers = result.users;
+                    renderUsers(allUsers);
+                } else {
+                    container.innerHTML = '<p class="text-center text-gray-500 py-8">No users found</p>';
+                }
+            } catch (error) {
+                console.error('Error loading users:', error);
+                document.getElementById('usersTable').innerHTML = '<p class="text-center text-red-500 py-8">Failed to load users</p>';
+            }
+        }
+
+        function getRoleBadgeClass(role) {
+            switch(role) {
+                case 'admin': return 'role-admin';
+                case 'customer': return 'role-customer';
+                case 'vendor': return 'role-vendor';
+                default: return 'role-customer';
+            }
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'Never';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        function renderUsers(users) {
+            const container = document.getElementById('usersTable');
+            
+            if (!users || users.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 py-8">No users found</p>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <div class="overflow-x-auto">
+                    <table class="w-full users-table min-w-[700px]">
+                        <thead class="border-b border-gray-200">
+                            <tr class="text-left text-xs sm:text-sm text-gray-500">
+                                <th class="pb-2 sm:pb-3">ID</th>
+                                <th class="pb-2 sm:pb-3">Name</th>
+                                <th class="pb-2 sm:pb-3 hidden md:table-cell">Email</th>
+                                <th class="pb-2 sm:pb-3 hidden lg:table-cell">Phone</th>
+                                <th class="pb-2 sm:pb-3">Role</th>
+                                <th class="pb-2 sm:pb-3 hidden sm:table-cell">Joined</th>
+                                <th class="pb-2 sm:pb-3 hidden lg:table-cell">Last Login</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${users.map(user => `
+                                <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                    <td class="py-2 sm:py-3 text-xs sm:text-sm">${user.id}</td>
+                                    <td class="py-2 sm:py-3 text-xs sm:text-sm font-medium break-words max-w-[120px] sm:max-w-none">${escapeHtml(user.full_name)}</td>
+                                    <td class="py-2 sm:py-3 text-xs sm:text-sm hidden md:table-cell break-all max-w-[150px] md:max-w-none">${escapeHtml(user.email)}</td>
+                                    <td class="py-2 sm:py-3 text-xs sm:text-sm hidden lg:table-cell">${user.phone || '-'}</td>
+                                    <td class="py-2 sm:py-3">
+                                        <span class="role-badge ${getRoleBadgeClass(user.role)} text-xs">${user.role || 'customer'}</span>
+                                    </td>
+                                    <td class="py-2 sm:py-3 text-xs sm:text-sm hidden sm:table-cell">${formatDate(user.created_at)}</td>
+                                    <td class="py-2 sm:py-3 text-xs sm:text-sm hidden lg:table-cell">${formatDate(user.last_login)}</td>
+                                 </tr>
+                            `).join('')}
+                        </tbody>
+                     </table>
+                </div>
+                <div class="mt-4 text-xs sm:text-sm text-gray-500 text-center sm:text-left">
+                    Total Users: ${users.length}
+                </div>
+            `;
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Search functionality
+        const searchInput = document.getElementById('searchUsers');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                if (searchTerm.length === 0) {
+                    renderUsers(allUsers);
+                    return;
+                }
+                const filtered = allUsers.filter(user => 
+                    (user.full_name && user.full_name.toLowerCase().includes(searchTerm)) || 
+                    (user.email && user.email.toLowerCase().includes(searchTerm))
+                );
+                renderUsers(filtered);
+            });
+        }
+
+        // Logout
+        document.getElementById('logoutBtn')?.addEventListener('click', async (e) => {
+            e.preventDefault();
+            try {
+                await fetch('/api/admin/logout', { method: 'POST' });
+                window.location.href = '/adminlogin.html';
+            } catch (error) {
+                console.error('Logout error:', error);
+                window.location.href = '/adminlogin.html';
+            }
+        });
+
+        // Close sidebar when clicking a link on mobile
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                if (window.innerWidth <= 1024) {
+                    closeSidebar();
+                }
+            });
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 1024) {
+                closeSidebar();
+                document.getElementById('sidebar').classList.remove('open');
+                document.body.style.overflow = '';
+            }
+        });
+
+        checkAdminLogin();
+    </script>
+</body>
+</html>

@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>My Cart | PIO E-market</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        body { background: #f8f7fc; padding-bottom: 70px; }
+        .gradient-bg-card { background: linear-gradient(135deg, #4f6bff 0%, #7c8eff 100%); }
+        .cart-item { transition: all 0.2s ease; }
+        .cart-item:hover { background: #faf9ff; }
+        .quantity-btn { transition: all 0.2s; }
+        .quantity-btn:hover { background: #e8ecff; color: #4f6bff; }
+        .quantity-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .loader {
+            border: 3px solid #e8e7f0;
+            border-top: 3px solid #4f6bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2a2b3a;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 40px;
+            font-size: 14px;
+            z-index: 200;
+            animation: fadeOut 3s ease forwards;
+        }
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            70% { opacity: 1; }
+            100% { opacity: 0; visibility: hidden; }
+        }
+        .product-img-container {
+            width: 100px;
+            height: 100px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f5f4fa 0%, #e8e7f0 100%);
+            border-radius: 12px;
+        }
+        .product-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .stock-badge {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 20px;
+            background: #f0f0f0;
+            color: #666;
+        }
+        .stock-warning {
+            background: #fff3e0;
+            color: #ff9800;
+        }
+        @media (max-width: 640px) {
+            .product-img-container {
+                width: 70px;
+                height: 70px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-[#f8f7fc] antialiased">
+
+    <div id="loadingOverlay" class="fixed inset-0 bg-white/95 z-50 flex items-center justify-center">
+        <div class="text-center">
+            <div class="loader mx-auto mb-4"></div>
+            <p class="text-[#4f6bff] font-medium">Loading your cart...</p>
+        </div>
+    </div>
+
+    <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-xl border-b border-[#eeeef5] shadow-sm">
+        <div class="px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+            <a href="/dashboard" class="flex items-center gap-3 cursor-pointer">
+                <div class="w-9 h-9 rounded-xl gradient-bg-card flex items-center justify-center shadow-sm">
+                    <span class="text-white font-extrabold text-lg">P</span>
+                </div>
+                <div class="leading-tight">
+                    <h1 class="text-xl font-extrabold tracking-tight text-[#4f6bff]">PIO E-market</h1>
+                    <p class="text-[10px] font-medium text-[#a5a3b5] tracking-wide">curated atelier</p>
+                </div>
+            </a>
+            <div class="flex items-center gap-4">
+                <a href="/dashboard" class="text-sm text-[#6b6a7e] hover:text-[#4f6bff] transition flex items-center gap-1">
+                    <span class="material-symbols-outlined text-lg">arrow_back</span>
+                    <span class="hidden sm:inline">Continue Shopping</span>
+                </a>
+                <div class="flex items-center gap-2 cursor-pointer hover:bg-[#f0eef8] rounded-full pl-2 pr-3 py-1 transition" id="userMenuBtn">
+                    <div class="w-8 h-8 rounded-full gradient-bg-card flex items-center justify-center text-white font-semibold text-sm shadow-sm" id="userInitial">JD</div>
+                    <span class="text-sm font-medium text-[#2a2b3a] hidden sm:inline-block" id="userName">Loading...</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="mb-8">
+            <h1 class="text-3xl font-extrabold text-[#2a2b3a]">🛒 My Cart</h1>
+            <p class="text-[#a5a3b5] mt-1">Review and manage items in your shopping cart</p>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-8">
+            <div class="flex-1">
+                <div id="cartItemsContainer" class="space-y-4">
+                    <div class="text-center py-12 bg-white rounded-2xl border border-[#f0eef8]">
+                        <div class="loader mx-auto mb-4"></div>
+                        <p class="text-[#a5a3b5]">Loading cart items...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:w-96">
+                <div class="bg-white rounded-2xl border border-[#f0eef8] p-6 sticky top-24">
+                    <h2 class="text-xl font-bold text-[#2a2b3a] mb-4">Order Summary</h2>
+                    <div class="space-y-3 pb-4 border-b border-[#f0eef8]">
+                        <div class="flex justify-between">
+                            <span class="text-[#6b6a7e]">Subtotal</span>
+                            <span class="font-semibold text-[#2a2b3a]" id="subtotal">₦0.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-[#6b6a7e]">Shipping</span>
+                            <span class="font-semibold text-[#2a2b3a]" id="shipping">Calculated at checkout</span>
+                        </div>
+                    </div>
+                    <div class="flex justify-between pt-4 pb-6">
+                        <span class="text-lg font-bold text-[#2a2b3a]">Total</span>
+                        <span class="text-2xl font-extrabold text-[#4f6bff]" id="total">₦0.00</span>
+                    </div>
+                    <button id="checkoutBtn" class="w-full gradient-bg-card text-white font-bold py-3 rounded-xl hover:shadow-lg transition-all">
+                        Proceed to Checkout
+                    </button>
+                    <p class="text-xs text-center text-[#a5a3b5] mt-4">Secure checkout powered by PIO E-market</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let cartItems = [];
+
+        function formatNaira(amount) {
+            return new Intl.NumberFormat('en-NG', {
+                style: 'currency',
+                currency: 'NGN',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(amount);
+        }
+
+        function showToast(message, isError = false) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            if (isError) toast.style.background = '#ff6b6b';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        async function checkLoginStatus() {
+            try {
+                const response = await fetch('/api/me');
+                const result = await response.json();
+                if (result.success) {
+                    currentUser = result.user;
+                    displayUserInfo(currentUser);
+                    await loadCart();
+                } else {
+                    window.location.href = '/login';
+                }
+            } catch (error) {
+                window.location.href = '/login';
+            } finally {
+                document.getElementById('loadingOverlay').style.display = 'none';
+            }
+        }
+
+        function displayUserInfo(user) {
+            const initials = user.full_name.split(' ').map(n => n[0]).join('').toUpperCase();
+            document.getElementById('userInitial').textContent = initials.substring(0, 2);
+            document.getElementById('userName').textContent = user.full_name.split(' ')[0];
+        }
+
+        async function loadCart() {
+            try {
+                const response = await fetch('/api/cart');
+                const result = await response.json();
+                
+                if (result.success && result.items && result.items.length > 0) {
+                    cartItems = result.items;
+                    renderCart();
+                    updateSummary();
+                } else {
+                    document.getElementById('cartItemsContainer').innerHTML = `
+                        <div class="text-center py-12 bg-white rounded-2xl border border-[#f0eef8]">
+                            <span class="material-symbols-outlined text-6xl text-[#a5a3b5] mb-3">shopping_cart</span>
+                            <p class="text-[#a5a3b5] mb-4">Your cart is empty</p>
+                            <a href="/dashboard" class="inline-block gradient-bg-card text-white px-6 py-2 rounded-xl">Continue Shopping</a>
+                        </div>
+                    `;
+                    document.getElementById('subtotal').textContent = '₦0.00';
+                    document.getElementById('total').textContent = '₦0.00';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('cartItemsContainer').innerHTML = `
+                    <div class="text-center py-12 bg-white rounded-2xl border border-[#f0eef8]">
+                        <p class="text-red-500">Failed to load cart. Please try again.</p>
+                        <a href="/dashboard" class="inline-block text-[#4f6bff] mt-2">Back to Shop</a>
+                    </div>
+                `;
+            }
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cartItemsContainer');
+            
+            if (cartItems.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 bg-white rounded-2xl border border-[#f0eef8]">
+                        <span class="material-symbols-outlined text-6xl text-[#a5a3b5] mb-3">shopping_cart</span>
+                        <p class="text-[#a5a3b5] mb-4">Your cart is empty</p>
+                        <a href="/dashboard" class="inline-block gradient-bg-card text-white px-6 py-2 rounded-xl">Continue Shopping</a>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = cartItems.map(item => {
+                const maxQty = item.max_quantity || 99;
+                const isAtMax = item.quantity >= maxQty;
+                const isAtMin = item.quantity <= 1;
+                const stockStatus = maxQty < 10 ? 'stock-warning' : '';
+                
+                return `
+                    <div class="cart-item bg-white rounded-2xl border border-[#f0eef8] p-4 flex flex-col sm:flex-row gap-4" data-item-id="${item.id}">
+                        <div class="product-img-container flex-shrink-0">
+                            ${item.image_url ? 
+                                `<img src="${item.image_url}" class="product-image" alt="${escapeHtml(item.product_name)}" onerror="this.src='https://via.placeholder.com/100?text=No+Image'">` : 
+                                `<div class="w-full h-full flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-4xl text-[#b8b6cc]">${getProductIcon(item.product_name)}</span>
+                                </div>`
+                            }
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-[#2a2b3a]">${escapeHtml(item.product_name)}</h3>
+                            <p class="text-sm text-[#a5a3b5] mt-1">SKU: ${item.sku || 'N/A'}</p>
+                            <div class="flex items-center gap-2 mt-2 flex-wrap">
+                                <span class="text-[#4f6bff] font-bold">${formatNaira(parseFloat(item.unit_price))}</span>
+                                <span class="stock-badge ${stockStatus}">📦 Stock: ${maxQty}</span>
+                                ${maxQty < 5 ? '<span class="stock-badge stock-warning">⚠️ Low stock!</span>' : ''}
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button class="quantity-btn w-8 h-8 rounded-full bg-[#f5f4fa] flex items-center justify-center text-[#6b6a7e] hover:bg-[#e8ecff] hover:text-[#4f6bff] transition" 
+                                onclick="updateQuantity(${item.id}, ${item.quantity - 1})" ${isAtMin ? 'disabled' : ''}>
+                                <span class="material-symbols-outlined text-lg">remove</span>
+                            </button>
+                            <span class="font-semibold text-[#2a2b3a] w-8 text-center" id="qty-${item.id}">${item.quantity}</span>
+                            <button class="quantity-btn w-8 h-8 rounded-full bg-[#f5f4fa] flex items-center justify-center text-[#6b6a7e] hover:bg-[#e8ecff] hover:text-[#4f6bff] transition" 
+                                onclick="updateQuantity(${item.id}, ${item.quantity + 1})" ${isAtMax ? 'disabled' : ''}>
+                                <span class="material-symbols-outlined text-lg">add</span>
+                            </button>
+                        </div>
+                        <div class="text-right sm:text-left">
+                            <p class="font-bold text-[#4f6bff]">${formatNaira(parseFloat(item.unit_price) * item.quantity)}</p>
+                            <button class="text-sm text-[#ff6b6b] hover:text-red-600 transition mt-1 flex items-center gap-1" onclick="removeItem(${item.id})">
+                                <span class="material-symbols-outlined text-sm">delete</span>
+                                Remove
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getProductIcon(productName) {
+            const name = productName.toLowerCase();
+            if (name.includes('watch')) return 'watch';
+            if (name.includes('blazer')) return 'checkroom';
+            if (name.includes('chair') || name.includes('sofa')) return 'weekend';
+            if (name.includes('headphone')) return 'headphones';
+            if (name.includes('bag')) return 'luggage';
+            return 'shopping_bag';
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        async function updateQuantity(cartItemId, newQuantity) {
+            if (newQuantity < 1) {
+                await removeItem(cartItemId);
+                return;
+            }
+            
+            // Find the item to check max quantity
+            const item = cartItems.find(i => i.id === cartItemId);
+            const maxQty = item?.max_quantity || 99;
+            
+            if (newQuantity > maxQty) {
+                showToast(`⚠️ Only ${maxQty} items available in stock`, true);
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/cart/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cart_item_id: cartItemId, quantity: newQuantity })
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    if (item) {
+                        item.quantity = newQuantity;
+                        document.getElementById(`qty-${cartItemId}`).textContent = newQuantity;
+                        updateSummary();
+                        // Re-render to update button states
+                        renderCart();
+                        showToast(result.message || 'Cart updated');
+                    }
+                } else {
+                    showToast(result.message || 'Failed to update', true);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Network error', true);
+            }
+        }
+
+        async function removeItem(cartItemId) {
+            try {
+                const response = await fetch('/api/cart/remove', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cart_item_id: cartItemId })
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    cartItems = cartItems.filter(i => i.id !== cartItemId);
+                    renderCart();
+                    updateSummary();
+                    showToast('Item removed from cart');
+                } else {
+                    showToast(result.message || 'Failed to remove', true);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Network error', true);
+            }
+        }
+
+        function updateSummary() {
+            const subtotal = cartItems.reduce((sum, item) => sum + (parseFloat(item.unit_price) * item.quantity), 0);
+            document.getElementById('subtotal').textContent = formatNaira(subtotal);
+            document.getElementById('total').textContent = formatNaira(subtotal);
+        }
+
+        document.getElementById('checkoutBtn')?.addEventListener('click', () => {
+            if (cartItems.length === 0) {
+                showToast('Your cart is empty', true);
+                return;
+            }
+            window.location.href = '/checkout';
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            checkLoginStatus();
+        });
+    </script>
+</body>
+</html>

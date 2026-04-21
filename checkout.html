@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Checkout | PIO E-market</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        body { background: #f8f7fc; }
+        .gradient-bg-card { background: linear-gradient(135deg, #4f6bff 0%, #7c8eff 100%); }
+        .loader {
+            border: 3px solid #e8e7f0;
+            border-top: 3px solid #4f6bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2a2b3a;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 40px;
+            font-size: 14px;
+            z-index: 200;
+            animation: fadeOut 3s ease forwards;
+        }
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            70% { opacity: 1; }
+            100% { opacity: 0; visibility: hidden; }
+        }
+        .payment-option {
+            transition: all 0.2s;
+        }
+        .payment-option:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="bg-[#f8f7fc] antialiased">
+
+    <div id="loadingOverlay" class="fixed inset-0 bg-white/95 z-50 flex items-center justify-center">
+        <div class="text-center">
+            <div class="loader mx-auto mb-4"></div>
+            <p class="text-[#4f6bff] font-medium">Loading checkout...</p>
+        </div>
+    </div>
+
+    <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-xl border-b border-[#eeeef5] shadow-sm">
+        <div class="px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+            <a href="/cart" class="flex items-center gap-2 text-[#6b6a7e] hover:text-[#4f6bff] transition">
+                <span class="material-symbols-outlined">arrow_back</span>
+                <span>Back to Cart</span>
+            </a>
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full gradient-bg-card flex items-center justify-center shadow-sm">
+                    <span class="text-white font-extrabold text-sm">P</span>
+                </div>
+                <span class="font-bold text-[#4f6bff]">PIO E-market</span>
+            </div>
+            <div class="w-20"></div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <h1 class="text-3xl font-extrabold text-[#2a2b3a] mb-8">Checkout</h1>
+
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Checkout Form -->
+            <div class="flex-1 space-y-6">
+                <!-- Shipping Address -->
+                <div class="bg-white rounded-2xl border border-[#f0eef8] p-6">
+                    <h2 class="text-xl font-bold text-[#2a2b3a] mb-4 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[#4f6bff]">local_shipping</span>
+                        Shipping Address
+                    </h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-[#6b6a7e] mb-1">Full Name</label>
+                            <input type="text" id="fullName" class="w-full px-4 py-2 border border-[#e0def0] rounded-lg focus:ring-2 focus:ring-[#4f6bff] focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-[#6b6a7e] mb-1">Email</label>
+                            <input type="email" id="email" class="w-full px-4 py-2 border border-[#e0def0] rounded-lg focus:ring-2 focus:ring-[#4f6bff] focus:border-transparent">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-sm font-medium text-[#6b6a7e] mb-1">Address</label>
+                            <input type="text" id="address" placeholder="Street address" class="w-full px-4 py-2 border border-[#e0def0] rounded-lg focus:ring-2 focus:ring-[#4f6bff] focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-[#6b6a7e] mb-1">City</label>
+                            <input type="text" id="city" class="w-full px-4 py-2 border border-[#e0def0] rounded-lg focus:ring-2 focus:ring-[#4f6bff] focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-[#6b6a7e] mb-1">State</label>
+                            <input type="text" id="state" class="w-full px-4 py-2 border border-[#e0def0] rounded-lg focus:ring-2 focus:ring-[#4f6bff] focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-[#6b6a7e] mb-1">Postal Code</label>
+                            <input type="text" id="postalCode" class="w-full px-4 py-2 border border-[#e0def0] rounded-lg focus:ring-2 focus:ring-[#4f6bff] focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-[#6b6a7e] mb-1">Phone</label>
+                            <input type="tel" id="phone" class="w-full px-4 py-2 border border-[#e0def0] rounded-lg focus:ring-2 focus:ring-[#4f6bff] focus:border-transparent">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Method - Flutterwave -->
+                <div class="bg-white rounded-2xl border border-[#f0eef8] p-6">
+                    <h2 class="text-xl font-bold text-[#2a2b3a] mb-4 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[#4f6bff]">payments</span>
+                        Payment Method
+                    </h2>
+                    <div class="space-y-3">
+                        <div class="payment-option p-4 border-2 border-[#4f6bff] rounded-xl bg-[#e8ecff]">
+                            <div class="flex items-center justify-between flex-wrap gap-2">
+                                <div class="flex items-center gap-3">
+                                    <span class="material-symbols-outlined text-[#4f6bff] text-2xl">credit_card</span>
+                                    <span class="font-semibold text-[#2a2b3a]">Flutterwave</span>
+                                </div>
+                                <div class="flex gap-2">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/2560px-Visa_Inc._logo.svg.png" alt="Visa" class="h-5">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/1280px-Mastercard-logo.svg.png" alt="Mastercard" class="h-5">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Verve_logo.svg/2560px-Verve_logo.svg.png" alt="Verve" class="h-5">
+                                </div>
+                            </div>
+                            <p class="text-sm text-[#6b6a7e] mt-2">Pay with Card, USSD, Bank Transfer, or M-Pesa</p>
+                        </div>
+                        <div class="mt-3 p-3 bg-blue-50 rounded-lg">
+                            <p class="text-sm text-[#4f6bff] flex items-center gap-2">
+                                <span class="material-symbols-outlined text-sm">lock</span>
+                                Secure payment powered by Flutterwave
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="lg:w-96">
+                <div class="bg-white rounded-2xl border border-[#f0eef8] p-6 sticky top-24">
+                    <h2 class="text-xl font-bold text-[#2a2b3a] mb-4">Order Summary</h2>
+                    <div id="orderItems" class="max-h-60 overflow-y-auto space-y-2 mb-4">
+                        <div class="loader mx-auto"></div>
+                    </div>
+                    <div class="space-y-2 pt-4 border-t border-[#f0eef8]">
+                        <div class="flex justify-between">
+                            <span class="text-[#6b6a7e]">Subtotal</span>
+                            <span class="font-semibold" id="subtotal">₦0.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-[#6b6a7e]">Shipping</span>
+                            <span class="font-semibold">Free</span>
+                        </div>
+                        <div class="flex justify-between pt-2 border-t border-[#f0eef8]">
+                            <span class="text-lg font-bold">Total</span>
+                            <span class="text-2xl font-extrabold text-[#4f6bff]" id="total">₦0.00</span>
+                        </div>
+                    </div>
+                    <button id="placeOrderBtn" class="w-full gradient-bg-card text-white font-bold py-3 rounded-xl hover:shadow-lg transition-all mt-6 flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined">flutter_dash</span>
+                        Pay with Flutterwave
+                    </button>
+                    <p class="text-xs text-center text-[#a5a3b5] mt-4">You will be redirected to Flutterwave secure payment page</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let cartItems = [];
+        let subtotal = 0;
+
+        function formatNaira(amount) {
+            return new Intl.NumberFormat('en-NG', {
+                style: 'currency',
+                currency: 'NGN',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(amount);
+        }
+
+        function showToast(message, isError = false) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            if (isError) toast.style.background = '#ff6b6b';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        async function checkLoginStatus() {
+            try {
+                const response = await fetch('/api/me');
+                const result = await response.json();
+                if (result.success) {
+                    currentUser = result.user;
+                    document.getElementById('fullName').value = currentUser.full_name;
+                    document.getElementById('email').value = currentUser.email;
+                    await loadCart();
+                } else {
+                    window.location.href = '/login';
+                }
+            } catch (error) {
+                window.location.href = '/login';
+            } finally {
+                document.getElementById('loadingOverlay').style.display = 'none';
+            }
+        }
+
+        async function loadCart() {
+            try {
+                const response = await fetch('/api/cart');
+                const result = await response.json();
+                
+                if (result.success && result.items && result.items.length > 0) {
+                    cartItems = result.items;
+                    renderOrderSummary();
+                } else {
+                    window.location.href = '/cart';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                window.location.href = '/cart';
+            }
+        }
+
+        function renderOrderSummary() {
+            const container = document.getElementById('orderItems');
+            subtotal = 0;
+            
+            container.innerHTML = cartItems.map(item => {
+                const itemTotal = parseFloat(item.unit_price) * item.quantity;
+                subtotal += itemTotal;
+                return `
+                    <div class="flex justify-between text-sm py-2">
+                        <span>${item.quantity}x ${item.product_name}</span>
+                        <span class="font-semibold">${formatNaira(itemTotal)}</span>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('subtotal').textContent = formatNaira(subtotal);
+            document.getElementById('total').textContent = formatNaira(subtotal);
+        }
+
+        async function placeOrder() {
+            const fullName = document.getElementById('fullName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const address = document.getElementById('address').value.trim();
+            const city = document.getElementById('city').value.trim();
+            const state = document.getElementById('state').value.trim();
+            const postalCode = document.getElementById('postalCode').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            
+            if (!fullName) {
+                showToast('Please enter your full name', true);
+                return;
+            }
+            if (!address || !city || !state || !phone) {
+                showToast('Please fill in all shipping details', true);
+                return;
+            }
+            if (!email) {
+                showToast('Please enter your email address', true);
+                return;
+            }
+            
+            const btn = document.getElementById('placeOrderBtn');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<div class="loader w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Processing...';
+            
+            try {
+                // Prepare checkout data
+                const checkoutData = {
+                    address: { fullName, email, address, city, state, postalCode, phone },
+                    items: cartItems,
+                    subtotal: subtotal
+                };
+                
+                // Initialize Flutterwave payment (No order created yet)
+                const response = await fetch('/api/flutterwave/initialize', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        amount: subtotal,
+                        email: email,
+                        fullname: fullName,
+                        metadata: checkoutData
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Redirect to Flutterwave payment page
+                    window.location.href = result.authorization_url;
+                } else {
+                    showToast(result.message || 'Payment initialization failed. Please try again.', true);
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Network error. Please try again.', true);
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+
+        document.getElementById('placeOrderBtn').addEventListener('click', placeOrder);
+        document.addEventListener('DOMContentLoaded', checkLoginStatus);
+    </script>
+</body>
+</html>
