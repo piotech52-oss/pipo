@@ -4,73 +4,9 @@
     {
       "src": "index.js",
       "use": "@vercel/node"
-    },
-    {
-      "src": "public/**",
-      "use": "@vercel/static"
     }
   ],
   "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/index.js"
-    },
-    {
-      "src": "/flutterwave-callback",
-      "dest": "/index.js"
-    },
-    {
-      "src": "/login",
-      "dest": "/index.js"
-    },
-    {
-      "src": "/register",
-      "dest": "/index.js"
-    },
-    {
-      "src": "/dashboard",
-      "dest": "/index.js"
-    },
-    {
-      "src": "/cart",
-      "dest": "/index.js"
-    },
-    {
-      "src": "/checkout",
-      "dest": "/index.js"
-    },
-    {
-      "src": "/order-confirmation",
-      "dest": "/index.js"
-    },
-    {
-      "src": "/product",
-      "dest": "/index.js"
-    },
-    {
-      "src": "/orders",
-      "dest": "/index.js"
-    },
-    {
-      "src": "/profile",
-      "dest": "/index.js"
-    },
-    {
-      "src": "/wishlist",
-      "dest": "/index.js"
-    },
-    {
-      "src": "/offers",
-      "dest": "/index.js"
-    },
-    {
-      "src": "/support",
-      "dest": "/index.js"
-    },
-    {
-      "src": "/(.*)\\.(html|css|js|png|jpg|jpeg|gif|svg|ico|webp|woff|woff2|ttf|eot)",
-      "dest": "/public/$1.$2"
-    },
     {
       "src": "/(.*)",
       "dest": "/index.js"
